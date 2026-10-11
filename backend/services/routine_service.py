@@ -8,10 +8,10 @@ class RoutineCreate:
         "Day5", "Day6", "Day7",
     )
 
-    def __init__(self, name:str, dayname = DAY_NAMES):
+    def __init__(self, title_name:str, dayname = DAY_NAMES):
         self._database = sq.connect("../database/main/pulse.db")
         self._daynames = dayname
-        self.CreateRoutine = self.create_routine(name= name)
+        self.CreateRoutine = self.create_routine(name= title_name)
 
 
     def create_routine(self, name: str):
@@ -21,9 +21,10 @@ class RoutineCreate:
             INSERT INTO routinebase(name)
             VALUES(?)
             """,
-            name
+            (name, )
         )
         routine_id = cursor.lastrowid
+        db.commit() 
         return self.fetch_days(routine_id= routine_id)
     
     
@@ -32,12 +33,12 @@ class RoutineCreate:
         for day in self._daynames:
             db.execute(
                 """
-                INSERT INTO routinedays(routine_id, routine_name)
+                INSERT INTO routinedays(routine_id, day_name)
                 VALUES(?, ?)
                 """,
-                (day, routine_id )
+                (routine_id, day )
             )
-
-
+        
+        db.commit()
     
 
