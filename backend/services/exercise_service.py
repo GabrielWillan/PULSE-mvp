@@ -7,11 +7,9 @@ def create_workout(
     sets: int,
     reps: int,
     rest_time: int,
-    note: str | None = None,
-    db_path: str = "../database/main/pulse.db"
+    note: str | None = None
 ):
-    with sq.connect(db_path) as db:
-        db.execute("PRAGMA foreign_keys = ON")
+    with sq.connect("../database/main/pulse.db") as db:
         db.execute(
             """
             INSERT INTO exercisedetails
@@ -24,17 +22,13 @@ def create_workout(
     
 
 
-def show_workouts(db_path: str = "../database/main/pulse.db"):
-    with sq.connect(db_path) as db:
-        cursor = db.execute(
-            """SELECT * FROM exercisedetails;"""
-        )
-        result = cursor.fetchall()
-        db.close()
-        return result
+def show_workouts():
+    db= sq.connect("../database/main/pulse.db")
+    cursor = db.execute(
+        """SELECT name, sets, reps, rest_time FROM exercisedetails;"""
+    )
+    result = cursor.fetchall()
+    db.close()
+    return result
 
-
-create_workout(day_id= 1, name="Bench", sets=2, reps=8, rest_time=2, note=None)
-
-print(show_workouts())
 
