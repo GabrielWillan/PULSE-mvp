@@ -8,8 +8,8 @@ class RoutineCreate:
         "Day5", "Day6", "Day7",
     )
 
-    def __init__(self, title_name:str, dayname = DAY_NAMES):
-        self._database = sq.connect("../database/main/pulse.db")
+    def __init__(self, title_name:str, dayname = DAY_NAMES, db_path = "../database/main/pulse.db"):
+        self._database = sq.connect(db_path)
         self._daynames = dayname
         self.CreateRoutine = self.create_routine(name= title_name)
 
@@ -40,5 +40,7 @@ class RoutineCreate:
             )
         
         db.commit()
+    
+
     
 
