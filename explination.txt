@@ -1,0 +1,8 @@
+| Action | Frontend (React) | Backend (FastAPI + SQLite) |
+|---|---|---|
+| Start workout | User clicks Start | Creates a session record |
+| Pause workout | User clicks Pause | Saves pause state if you want to persist it |
+| Resume workout | User clicks Resume | Updates the session state if persisted |
+| Log an exercise set | User enters reps and weight | Validates and saves the set |
+| End workout | User clicks Finish | Marks the session as completed |
+| View workout history | Displays the history | Retrieves saved sessions |
