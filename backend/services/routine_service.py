@@ -1,46 +1,36 @@
-#create a routine & days 
 import sqlite3 as sq
 
 
-class RoutineCreate:
-    DAY_NAMES = (
-        "Day1", "Day2", "Day3", "Day4",
-        "Day5", "Day6", "Day7",
-    )
+def create_routine(title_name: str, db_path = "../database/main/pulse.db"):
+    with sq.connect(db_path) as db:
 
-    def __init__(self, title_name:str, dayname = DAY_NAMES, db_path = "../database/main/pulse.db"):
-        self._database = sq.connect(db_path)
-        self._daynames = dayname
-        self.CreateRoutine = self.create_routine(name= title_name)
-
-
-    def create_routine(self, name: str):
-        db = self._database
         cursor = db.execute(
             """
             INSERT INTO routinebase(name)
             VALUES(?)
             """,
-            (name, )
+            (title_name,)
         )
+
+        if not title_name:
+            raise ValueError("Routine name cannot be empty")
+    
         routine_id = cursor.lastrowid
-        db.commit() 
-        return self.fetch_days(routine_id= routine_id)
-    
-    
-    def fetch_days(self, routine_id: int):
-        db = self._database
-        for day in self._daynames:
-            db.execute(
-                """
-                INSERT INTO routinedays(routine_id, day_name)
-                VALUES(?, ?)
-                """,
-                (routine_id, day )
-            )
-        
         db.commit()
     
+    return routine_id
 
-    
 
+def create_routine_days(routine_id: int):
+    # Insert the seven days
+    ...
+
+
+def fetch_routine(routine_id: int):
+    # Retrieve the routine
+    ...
+
+
+def fetch_routine_days(routine_id: int):
+    # Retrieve its associated days
+    ...
