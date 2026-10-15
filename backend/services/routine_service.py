@@ -19,6 +19,8 @@ def create_routine(title_name: str, db_path = "database/main/pulse.db"):
         routine_id = cursor.lastrowid
         db.commit()
     
+    create_routine_days(routine_id= routine_id)
+    
     return routine_id
 
 
@@ -39,17 +41,19 @@ def create_routine_days(routine_id: int, db_path = "database/main/pulse.db"):
     return days_id
         
 
-def fetch_routine(routine_id: int, db_path = "database/main/pulse.db"):
+def fetch_routine(routine_id: int,db_path = "database/main/pulse.db"):
     with sq.connect(db_path) as db:
         routine_result = db.execute(
             """
-            SELECT id FROM routinebase
+            SELECT id, name FROM routinebase
             WHERE id = ?
             """,
             (routine_id,)
         ).fetchone()
+
+    days_result = fetch_routine_days(routine_id=routine_id)
     
-    return routine_result
+    return {"routine_id": routine_result, "day_names": days_result}
     
 
 
