@@ -1,12 +1,19 @@
 /* PULSE – Cornflower theme, one-screen layout */
 
-html, body, #root {
-  margin: 0;
-  padding: 0;
+html,
+body,
+#root {
   width: 100%;
-  max-width: none;
-  display: block;
-  text-align: left;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
 }
 /* desktop: lock to one screen, no page scroll */
 @media (min-width: 641px) {
@@ -21,7 +28,7 @@ html, body, #root {
   --surface: #ffffff;
   --surface2: #eff1f9;
   --border: #dde2f0;
-  --text: #161b2b;
+  --text: #ffffff;
   --muted: #6a7389;
   --accent: #3a6df0;
   --accent2: #5b8bf5;
@@ -102,6 +109,11 @@ html, body, #root {
   margin: clamp(6px, 1.2vh, 14px) 0 clamp(4px, 1vh, 10px);
 }
 .pulse-hero p { margin: 0; color: var(--muted); font-size: 16px; }
+
+.routines-glass h1,
+.routines-empty h2 {
+  color: #ffffff;
+}
 
 /* week strip */
 .pulse-week {

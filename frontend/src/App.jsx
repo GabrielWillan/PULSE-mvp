@@ -1,4 +1,4 @@
 import './App.css'
-import {Dashboard} from './components/dashboard'
+import { RoutineMenu } from './components/menu_components/menu'
 
-export default Dashboard
+export default RoutineMenu

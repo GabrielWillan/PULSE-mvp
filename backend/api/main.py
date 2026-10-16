@@ -24,4 +24,4 @@ def create_routinebase(validator:RoutineCreateValidator):
     return routine
 
 
-
+#Connect your api to your front end  using the endpoint you made
