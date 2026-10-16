@@ -10,10 +10,19 @@ from services.routine_service import (
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8000/"
 
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = origins,
+    allow_methods = ["*"],
+    allow_headers = ["*"],
+)
 
 #routine createvalidator
-
 class RoutineCreateValidator(BaseModel):
     title_name:str
 
@@ -24,4 +33,3 @@ def create_routinebase(validator:RoutineCreateValidator):
     return routine
 
 
-#Connect your api to your front end  using the endpoint you made

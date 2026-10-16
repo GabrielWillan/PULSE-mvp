@@ -63,6 +63,7 @@ function RoutineCard({ routine, onSelect }) {
 export function RoutineMenu({ routines = [], onCreate, onSelect }) {
   const { label, iso } = formatToday(useToday());
   const hasRoutines = routines.length > 0;
+  const[isFormOpen, setIsFormOpen] = useState(false);
 
   return (
     <div className="routines">
@@ -80,7 +81,7 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
             <>
               <div className="routines-head">
                 <h1 id="routines-title">Your routines</h1>
-                <CreateButton onCreate={onCreate} />
+                <CreateButton onCreate={()=> setIsFormOpen(true)} />
               </div>
               <ul className="routines-grid" aria-labelledby="routines-title">
                 {routines.map((routine) => (
@@ -89,6 +90,61 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
                   </li>
                 ))}
               </ul>
+              {isFormOpen && (
+                <div
+                  className="routine-modal-overlay"
+                  onMouseDown={(event) => {
+                    if (event.target === event.currentTarget) {
+                      setIsFormOpen(false);
+                    }
+                  }}
+                >
+                  <section
+                    className="routine-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="routine-modal-title"
+                  >
+                    <button
+                      type="button"
+                      className="routine-modal-close"
+                      onClick={() => setIsFormOpen(false)}
+                      aria-label="Close form"
+                    >
+                      &times;
+                    </button>
+
+                    <h2 id="routine-modal-title">Create a routine</h2>
+                    <p>Build your training plan.</p>
+
+                    <form className="routine-form">
+                      <label htmlFor="routine-name">Routine name</label>
+
+                      <input
+                        id="routine-name"
+                        name="routine-name"
+                        type="text"
+                        placeholder="e.g. Push Pull Legs"
+                        required
+                      />
+
+                      <div className="routine-modal-actions">
+                        <button
+                          type="button"
+                          className="routine-cancel"
+                          onClick={() => setIsFormOpen(false)}
+                        >
+                          Cancel
+                        </button>
+
+                        <button type="submit" className="routine-submit">
+                          Create routine
+                        </button>
+                      </div>
+                    </form>
+                  </section>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -97,11 +153,66 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
                 <div className="routines-empty-icon"><ListIcon /></div>
                 <h2>No routines yet</h2>
                 <p>Create your first routine and it will appear here.</p>
-                <CreateButton onCreate={onCreate} />
+                <CreateButton onCreate={()=> setIsFormOpen(true)} />
               </div>
             </>
           )}
         </main>
+        {isFormOpen && (
+          <div
+            className="routine-modal-overlay"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setIsFormOpen(false);
+              }
+            }}
+          >
+            <section
+              className="routine-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="routine-modal-title"
+            >
+              <button
+                type="button"
+                className="routine-modal-close"
+                onClick={() => setIsFormOpen(false)}
+                aria-label="Close form"
+              >
+                &times;
+              </button>
+
+              <h2 id="routine-modal-title">Create a routine</h2>
+              <p>Build your training plan.</p>
+
+              <form className="routine-form">
+                <label htmlFor="routine-name">Routine name</label>
+
+                <input
+                  id="routine-name"
+                  name="routine-name"
+                  type="text"
+                  placeholder="e.g. Push Pull Legs"
+                  required
+                />
+
+                <div className="routine-modal-actions">
+                  <button
+                    type="button"
+                    className="routine-cancel"
+                    onClick={() => setIsFormOpen(false)}
+                  >
+                    Cancel
+                  </button>
+
+                  <button type="submit" className="routine-submit">
+                    Create routine
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );
