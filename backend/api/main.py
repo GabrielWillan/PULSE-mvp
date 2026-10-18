@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field  # noqa: F401
 from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
+    fetch_all_routines
 )
 
 app = FastAPI()
@@ -34,3 +35,8 @@ def create_routinebase(validator:RoutineCreateValidator):
     return routine._fetchroutine
 
 
+@app.get("/fetchallroutines")
+def fetchall_routine():
+   all_routines = fetch_all_routines()
+   return all_routines
+   

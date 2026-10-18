@@ -74,3 +74,19 @@ class FetchRoutine:
             ).fetchall()
         
         return days
+    
+
+
+
+def fetch_all_routines(db_path="database/main/pulse.db"):
+    with sq.connect(db_path) as db:
+        routines = db.execute(
+            """
+            SELECT id, name FROM routinebase
+            """
+        ).fetchall()
+
+    return [
+        {"id": routine[0], "name": routine[1]}
+        for routine in routines
+    ]

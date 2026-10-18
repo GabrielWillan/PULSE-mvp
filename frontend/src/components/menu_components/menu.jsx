@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import "../menu_components/Menu.css";
 import { postRoutine } from "../api_components";
 
@@ -74,12 +74,12 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
 
   };
 
-
-
-
   const { label, iso } = formatToday(useToday());
   const hasRoutines = routines.length > 0;
   const[isFormOpen, setIsFormOpen] = useState(false);
+  const[isMessageBarOpen, setIsMessageBarOpen] = useState(false);
+  const[message, setMessage] = useState("")
+  const[messageColor, setMessageColor] = useState("success")
 
   return (
     <div className="routines">
