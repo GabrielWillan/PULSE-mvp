@@ -2,10 +2,10 @@ import sqlite3 as sq  # noqa: F401
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # noqa: F401
 from services.routine_service import (
-    create_routine,
-    fetch_routine,
+    CreateRoutine,
+    FetchRoutine,
 )
 
 app = FastAPI()
@@ -28,8 +28,10 @@ class RoutineCreateValidator(BaseModel):
 
 @app.post("/createroutine", status_code= status.HTTP_201_CREATED)
 def create_routinebase(validator:RoutineCreateValidator):
-    routine_id = create_routine(validator.title_name)
-    routine = fetch_routine(routine_id)
-    return routine
+    routine_id = CreateRoutine(validator.title_name)._createroutine
+    routine = FetchRoutine(routine_id)
+    if not routine._fetchroutine:
+     raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+    return routine._fetchroutine
 
 

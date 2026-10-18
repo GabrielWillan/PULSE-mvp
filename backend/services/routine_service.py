@@ -2,70 +2,75 @@ import sqlite3 as sq
 
 DAY_NAMES = ["Day1", "Day2", "Day3", "Day4", "Day5", "Day6", "Day7"]
 
-def create_routine(title_name: str, db_path = "database/main/pulse.db"):
-    if not title_name:
-     raise ValueError("Routine name cannot be empty")
-    
-    
-    with sq.connect(db_path) as db:
+class CreateRoutine:
+    def __init__(self, title_name:str):
+        self._createroutine = self.create_routine(title_name=title_name)
+
+    def create_routine(self, title_name: str, db_path = "database/main/pulse.db"):
+        if not title_name:
+         raise ValueError("Routine name cannot be empty")
         
-        cursor = db.execute(
-            """
-            INSERT INTO routinebase(name)
-            VALUES(?)
-            """,
-            (title_name,)
-        ) 
-        routine_id = cursor.lastrowid
-        db.commit()
-    
-    create_routine_days(routine_id= routine_id)
-    
-    return routine_id
-
-
-def create_routine_days(routine_id: int, db_path = "database/main/pulse.db"):
-    days_id = []
-    with sq.connect(db_path) as db:
-        for day in DAY_NAMES:
+        
+        with sq.connect(db_path) as db:
+            
             cursor = db.execute(
                 """
-                INSERT INTO routinedays(routine_id, day_name)
-                VALUES(?, ?)
+                INSERT INTO routinebase(name)
+                VALUES(?)
                 """,
-                (routine_id, day,)
-            )
-            days_id.append(cursor.lastrowid)
+                (title_name,)
+            ) 
+            routine_id = cursor.lastrowid
+            db.commit()
+        
+        self.create_routine_days(routine_id= routine_id)
+        
+        return routine_id
 
-    
-    return days_id
+    def create_routine_days(self, routine_id: int, db_path = "database/main/pulse.db"):
+        days_id = []
+        with sq.connect(db_path) as db:
+            for day in DAY_NAMES:
+                cursor = db.execute(
+                    """
+                    INSERT INTO routinedays(routine_id, day_name)
+                    VALUES(?, ?)
+                    """,
+                    (routine_id, day,)
+                )
+                days_id.append(cursor.lastrowid)
+
+        
+        return days_id
+        
+class FetchRoutine:
+    def __init__(self, routine_id:int):
+        self._fetchroutine = self.fetch_routine(routine_id= routine_id)
         
 
-def fetch_routine(routine_id: int,db_path = "database/main/pulse.db"):
-    with sq.connect(db_path) as db:
-        routine_result = db.execute(
-            """
-            SELECT id, name FROM routinebase
-            WHERE id = ?
-            """,
-            (routine_id,)
-        ).fetchone()
+    def fetch_routine(self, routine_id: int,db_path = "database/main/pulse.db"):
+        with sq.connect(db_path) as db:
+            routine_result = db.execute(
+                """
+                SELECT id, name FROM routinebase
+                WHERE id = ?
+                """,
+                (routine_id,)
+            ).fetchone()
 
-    days_result = fetch_routine_days(routine_id=routine_id)
-    
-    return {"routine_id": routine_result, "day_names": days_result}
-    
+        days_result = self.fetch_routine_days(routine_id=routine_id)
+        
+        return {"routine_id": routine_result, "day_names": days_result}
+        
 
-
-
-def fetch_routine_days(routine_id: int, db_path = "database/main/pulse.db"):
-    with sq.connect(db_path) as db:
-        days = db.execute(
-            """
-            SELECT id, routine_id, day_name FROM routinedays
-            WHERE routine_id = ?
-            """,
-            (routine_id, )
-        ).fetchall()
-    
-    return days
+    def fetch_routine_days(self, routine_id: int, db_path = "database/main/pulse.db"):
+        with sq.connect(db_path) as db:
+            days = db.execute(
+                """
+                SELECT id, routine_id, day_name FROM routinedays
+                WHERE routine_id = ?
+                """,
+                (routine_id, )
+            ).fetchall()
+        
+        return days
