@@ -3,11 +3,7 @@ import sqlite3 as sq  # noqa: F401
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field  # noqa: F401
-from services.routine_service import (
-    CreateRoutine,
-    FetchRoutine,
-    fetch_all_routines
-)
+from services.routine_service import CreateRoutine, FetchRoutine, fetch_all_routines
 
 app = FastAPI()
 
