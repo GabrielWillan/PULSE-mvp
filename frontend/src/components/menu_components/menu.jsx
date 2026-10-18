@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../menu_components/Menu.css";
+import { postRoutine } from "../api_components";
 
 // Today's date, kept current if the tab stays open past midnight.
 function useToday() {
@@ -61,6 +62,21 @@ function RoutineCard({ routine, onSelect }) {
 // onCreate: called when "+ Create routine" is clicked
 // onSelect: called with the routine when a card is clicked
 export function RoutineMenu({ routines = [], onCreate, onSelect }) {
+  async function RoutineCreateHandler(events) {
+    const title_name = events.target["routine-name"].value;
+    try{
+      const RoutineResponse = await postRoutine(title_name);
+      console.log("New Routine has been created",RoutineResponse.CreateRoutineData) 
+    }
+    catch(error) {
+      console.error(error.message)
+    }
+
+  };
+
+
+
+
   const { label, iso } = formatToday(useToday());
   const hasRoutines = routines.length > 0;
   const[isFormOpen, setIsFormOpen] = useState(false);
@@ -117,9 +133,8 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
                     <h2 id="routine-modal-title">Create a routine</h2>
                     <p>Build your training plan.</p>
 
-                    <form className="routine-form">
+                    <form className="routine-form" onSubmit={RoutineCreateHandler}>
                       <label htmlFor="routine-name">Routine name</label>
-
                       <input
                         id="routine-name"
                         name="routine-name"
@@ -185,7 +200,7 @@ export function RoutineMenu({ routines = [], onCreate, onSelect }) {
               <h2 id="routine-modal-title">Create a routine</h2>
               <p>Build your training plan.</p>
 
-              <form className="routine-form">
+              <form className="routine-form" onSubmit={RoutineCreateHandler}>
                 <label htmlFor="routine-name">Routine name</label>
 
                 <input
