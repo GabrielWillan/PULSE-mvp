@@ -1,14 +1,15 @@
-.dashboard {
+.dashboard{
   --tx: #f1f5ff;
   --mu: #b4c1e0;
   --accent: #0071e3;
-  --accent-hover: #0a7cf0;
+  --accent-hover: #1784f2;
   --glow: rgba(0, 113, 227, 0.4);
   --glass: rgba(255, 255, 255, 0.09);
   --glass-line: rgba(255, 255, 255, 0.18);
   --sep: rgba(255, 255, 255, 0.14);
   --chev: rgba(235, 235, 245, 0.38);
   --icon: #8db8ff;
+
 
   color-scheme: dark;
   width: 100%;
@@ -26,6 +27,7 @@
     radial-gradient(ellipse 45vmax 38vmax at 50% 110%, rgba(99, 102, 241, 0.45), transparent 60%),
     #070d1c;
 }
+
 .dashboard *, .dashboard *::before, .dashboard *::after { box-sizing: border-box; }
 .dashboard button { font-family: inherit; }
 .dashboard h1, .dashboard h2 { color: #fff; }
@@ -33,7 +35,7 @@
 
 .dashboard-inner {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1300px;
   min-height: 100%;
   min-height: 100dvh;
   margin: 0 auto;
@@ -43,4 +45,60 @@
     max(clamp(20px, 4vh, 36px), env(safe-area-inset-top))
     clamp(20px, 4vw, 48px)
     max(clamp(20px, 4vh, 36px), env(safe-area-inset-bottom));
+}
+
+
+
+.dashboard-hdr { display: flex; align-items: center; justify-content: space-between; gap: 50px; flex: none; }
+.dashboard-left{display: flex; align-items:center; justify-content: space-between; gap: 40px;} 
+.dashboard-right{display: flex; align-items: center; justify-content: space-between; gap: 40px;}
+.dashboard-date { font-size: 16px; font-weight: 500; color: var(--mu); }
+.dashboard-brand { display: flex; align-items: center; gap: 10px; }
+.dashboard-logo {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #0a02ef, #0071e3);
+  box-shadow: 0 6px 14px var(--glow);
+}
+.dashboard-menu-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+
+  color: var(--tx);
+  background: var(--glass);
+  border: 0.5px solid var(--glass-line);
+
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dashboard-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.dashboard-name { font-weight: 700; font-size: 19px; letter-spacing: 0.02em; }
+
+
+.dashboard-add-exercise-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+
+  color: var(--tx);
+  background: linear-gradient(135deg, #0a02ef, #0071e3);
+  border: 1px solid var(--glass-line);
+
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+}
+
+.dashboard-add-exercise-btn:hover {
+  background:var(--accent-hover);
 }
