@@ -75,6 +75,22 @@ const ListIcon = () => (
   </svg>
 );
 
+const ChevronIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+);
+
 function CreateButton({ onCreate }) {
   return (
     <button
@@ -87,21 +103,24 @@ function CreateButton({ onCreate }) {
   );
 }
 
-// Displays a routine returned by the backend.
+// One row in the grouped list. Displays a routine returned by the backend.
 function RoutineCard({ routine, onSelect }) {
   return (
     <button
       type="button"
-      className="routines-card"
+      className="routines-row"
       onClick={() => onSelect?.(routine)}
     >
-      <span className="routines-card-name">{routine.name}</span>
+      <span className="routines-row-name">{routine.name}</span>
+      <span className="routines-row-chevron">
+        <ChevronIcon />
+      </span>
     </button>
   );
 }
 
 export function RoutineMenu({ onCreate, onSelect }) {
- const [allRoutines, setAllRoutines] = useState([]);
+  const [allRoutines, setAllRoutines] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const { label, iso } = formatToday(useToday());
@@ -147,6 +166,11 @@ export function RoutineMenu({ onCreate, onSelect }) {
     }
   }
 
+  function openForm() {
+    onCreate?.();
+    setIsFormOpen(true);
+  }
+
   return (
     <div className="routines">
       <div className="routines-inner">
@@ -164,61 +188,31 @@ export function RoutineMenu({ onCreate, onSelect }) {
           </time>
         </header>
 
-        <main
-          className={
-            "routines-glass" + (hasRoutines ? " has-items" : "")
-          }
-        >
+        {/* Split layout: title + button on the left, grouped list on the right */}
+        <main className="routines-split">
+          <div className="routines-side">
+            <h1 id="routines-title">Your routines</h1>
+            <CreateButton onCreate={openForm} />
+          </div>
+
           {hasRoutines ? (
-            <>
-              <div className="routines-head">
-                <h1 id="routines-title">Your routines</h1>
-
-                <CreateButton
-                  onCreate={() => {
-                    onCreate?.();
-                    setIsFormOpen(true);
-                  }}
-                />
-              </div>
-
-              <ul
-                className="routines-grid"
-                aria-labelledby="routines-title"
-              >
-                {allRoutines.map((routine) => (
-                  <li key={routine.id}>
-                    <RoutineCard
-                      routine={routine}
-                      onSelect={onSelect}
-                    />
-                  </li>
-                ))}
-                </ul>
-            </>
+            <ul className="routines-group" aria-labelledby="routines-title">
+              {allRoutines.map((routine) => (
+                <li key={routine.id}>
+                  <RoutineCard routine={routine} onSelect={onSelect} />
+                </li>
+              ))}
+            </ul>
           ) : (
-            <>
-              <h1 id="routines-title">Your routines</h1>
-
-              <div className="routines-empty">
-                <div className="routines-empty-icon">
-                  <ListIcon />
-                </div>
-
-                <h2>No routines yet</h2>
-
-                <p>
-                  Create your first routine and it will appear here.
-                </p>
-
-                <CreateButton
-                  onCreate={() => {
-                    onCreate?.();
-                    setIsFormOpen(true);
-                  }}
-                />
+            <div className="routines-empty">
+              <div className="routines-empty-icon">
+                <ListIcon />
               </div>
-            </>
+
+              <h2>No routines yet</h2>
+
+              <p>Create your first routine and it will appear here.</p>
+            </div>
           )}
         </main>
 
@@ -274,10 +268,7 @@ export function RoutineMenu({ onCreate, onSelect }) {
                     Cancel
                   </button>
 
-                  <button
-                    type="submit"
-                    className="routine-submit"
-                  >
+                  <button type="submit" className="routine-submit">
                     Create routine
                   </button>
                 </div>

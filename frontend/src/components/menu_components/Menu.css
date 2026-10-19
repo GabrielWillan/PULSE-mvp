@@ -1,4 +1,4 @@
-/* PULSE – Routine Menu: aurora glass card
+/* PULSE – Routine Menu: split layout (title left, grouped list right)
    Self-contained: it does not depend on the light dashboard tokens in App.css. */
 
 /* The screen is its own scroll container, so it scrolls even though App.css
@@ -6,20 +6,24 @@
 .routines {
   --tx: #f1f5ff;
   --mu: #b4c1e0;
-  --accent: #2f6bdf;
-  --accent-hover: #3a77ef;
-  --glow: rgba(47, 107, 223, 0.5);
-  --glass: rgba(255, 255, 255, 0.08);
+  --accent: #0071e3;
+  --accent-hover: #0a7cf0;
+  --glow: rgba(0, 113, 227, 0.4);
+  --glass: rgba(255, 255, 255, 0.09);
   --glass-line: rgba(255, 255, 255, 0.18);
+  --sep: rgba(255, 255, 255, 0.14);
+  --chev: rgba(235, 235, 245, 0.38);
   --icon: #8db8ff;
 
   color-scheme: dark;
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  overflow-y: auto;
   box-sizing: border-box;
   color: var(--tx);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    system-ui, Inter, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   background:
     radial-gradient(ellipse 45vmax 30vmax at 15% 20%, rgba(58, 109, 240, 0.55), transparent 60%),
@@ -29,6 +33,7 @@
 }
 .routines *, .routines *::before, .routines *::after { box-sizing: border-box; }
 .routines button { font-family: inherit; }
+.routines h1, .routines h2 { color: #fff; }
 
 .routines-inner {
   width: 100%;
@@ -44,63 +49,102 @@
     max(clamp(20px, 4vh, 36px), env(safe-area-inset-bottom));
 }
 
-/* header: date left, brand right */
+/* header: brand left, date right */
 .routines-hdr { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: none; }
 .routines-date { font-size: 16px; font-weight: 500; color: var(--mu); }
 .routines-brand { display: flex; align-items: center; gap: 10px; }
 .routines-logo {
   width: 34px; height: 34px; border-radius: 10px;
   display: grid; place-items: center; color: #fff;
-  background: linear-gradient(135deg, #60a5fa, #2f6bdf);
+  background: linear-gradient(135deg, #4da3ff, #0071e3);
   box-shadow: 0 6px 14px var(--glow);
 }
 .routines-name { font-weight: 700; font-size: 19px; letter-spacing: 0.02em; }
 
-/* the glass card (grows to fill the screen, then scrolls with its content) */
-.routines-glass {
-  flex: 1;
-  width: 100%;
-  max-width: 640px;
-  margin: clamp(20px, 4vh, 32px) auto 0;
-  padding: clamp(24px, 4vw, 44px);
+/* split layout: auto margins center it when short, and it scrolls when long */
+.routines-split {
+  margin: auto 0;
+  padding: clamp(24px, 5vh, 48px) 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  text-align: center;
-  border-radius: 32px;
-  border: 1px solid var(--glass-line);
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  align-items: flex-start;
+  gap: clamp(32px, 6vw, 72px);
 }
-.routines-glass.has-items { max-width: 960px; justify-content: flex-start; align-items: stretch; text-align: left; }
-.routines-glass h1 {
-  margin: 0;
-  font-size: clamp(30px, 4vw, 42px);
+
+/* left: title + primary button (stays in view while a long list scrolls) */
+.routines-side {
+  flex: none;
+  width: clamp(260px, 30vw, 330px);
+  position: sticky;
+  top: clamp(16px, 4vh, 36px);
+}
+.routines-side h1 {
+  margin: 0 0 26px;
+  font-size: clamp(38px, 5vw, 54px);
   line-height: 1.1;
   letter-spacing: -0.03em;
   font-weight: 700;
 }
 
-/* primary button */
+/* primary button (iOS capsule) */
 .routines-create {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 15px 24px; border: 0; border-radius: 15px;
+  padding: 16px 30px; border: 0; border-radius: 999px;
   background: var(--accent); color: #fff;
-  font-size: 16px; font-weight: 500; cursor: pointer;
-  box-shadow: 0 8px 18px var(--glow);
+  font-size: 17px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 8px 22px var(--glow);
   transition: background 0.15s, transform 0.1s;
 }
-.routines-create span { font-size: 20px; line-height: 1; margin-right: -2px; }
+.routines-create span { font-size: 22px; line-height: 1; margin-right: -2px; }
 .routines-create:hover { background: var(--accent-hover); }
 .routines-create:active { transform: scale(0.98); }
 .routines button:focus-visible { outline: 2px solid var(--icon); outline-offset: 3px; }
 
-/* empty state */
-.routines-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 0; }
+/* right: grouped list */
+.routines-group {
+  flex: 1;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+.routines-group li { position: relative; }
+.routines-group li + li::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 16px; right: 0;
+  height: 1px;
+  background: var(--sep);
+}
+.routines-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 22px;
+  border: 0; background: transparent; color: inherit;
+  font: inherit; font-size: 19px; font-weight: 500; text-align: left;
+  cursor: pointer; transition: background 0.15s;
+}
+.routines-row:hover { background: rgba(255, 255, 255, 0.08); }
+.routines-row:active { background: rgba(255, 255, 255, 0.14); }
+.routines .routines-row:focus-visible { outline: 2px solid var(--icon); outline-offset: -2px; }
+.routines-row-name { min-width: 0; overflow-wrap: anywhere; }
+.routines-row-chevron { flex: none; display: grid; color: var(--chev); }
+
+/* right: empty state, same material as the list */
+.routines-empty {
+  flex: 1;
+  min-width: 0;
+  padding: clamp(32px, 7vh, 56px) 24px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; text-align: center;
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
 .routines-empty-icon {
   width: 60px; height: 60px; border-radius: 18px; margin-bottom: 6px;
   display: grid; place-items: center; color: var(--icon);
@@ -108,25 +152,6 @@
 }
 .routines-empty h2 { margin: 0; font-size: 21px; font-weight: 600; }
 .routines-empty p { margin: 0; max-width: 34ch; color: var(--mu); font-size: 15px; line-height: 1.5; }
-.routines-empty .routines-create { margin-top: 14px; }
-
-
-/* with routines: heading + button on one row, cards below */
-.routines-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.routines-grid {
-  list-style: none; margin: 8px 0 0; padding: 0;
-  display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-}
-.routines-card {
-  display: block; width: 100%; padding: 20px; text-align: left;
-  color: inherit; font: inherit; cursor: pointer;
-  border-radius: 20px; border: 1px solid var(--glass-line);
-  background: rgba(255, 255, 255, 0.07);
-  transition: border-color 0.15s, background 0.15s;
-}
-.routines-card:hover { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.11); }
-.routines-card-name { display: block; font-size: 18px; font-weight: 600; }
 
 /* Overlay covering the page */
 .routine-modal-overlay {
@@ -273,13 +298,14 @@
     }
 }
 
-/* narrow screens: normal page scroll, full-width button */
-@media (max-width: 700px) {
+/* narrow screens (matches the 640px breakpoint in App.css): stacked layout, page scroll */
+@media (max-width: 640px) {
   .routines { height: auto; min-height: 100dvh; overflow: visible; }
   .routines-inner { min-height: 100dvh; }
   .routines-date { font-size: 14px; }
   .routines-name { font-size: 17px; }
-  .routines-glass { border-radius: 28px; }
-  .routines-glass .routines-create { width: 100%; }
-  .routines-head { flex-direction: column; align-items: stretch; }
+  .routines-split { flex-direction: column; align-items: stretch; gap: 24px; }
+  .routines-side { position: static; width: 100%; }
+  .routines-side h1 { margin-bottom: 20px; }
+  .routines-create { width: 100%; }
 }

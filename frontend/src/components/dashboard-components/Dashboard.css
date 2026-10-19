@@ -1,0 +1,46 @@
+.dashboard {
+  --tx: #f1f5ff;
+  --mu: #b4c1e0;
+  --accent: #0071e3;
+  --accent-hover: #0a7cf0;
+  --glow: rgba(0, 113, 227, 0.4);
+  --glass: rgba(255, 255, 255, 0.09);
+  --glass-line: rgba(255, 255, 255, 0.18);
+  --sep: rgba(255, 255, 255, 0.14);
+  --chev: rgba(235, 235, 245, 0.38);
+  --icon: #8db8ff;
+
+  color-scheme: dark;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  color: var(--tx);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    system-ui, Inter, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(ellipse 45vmax 30vmax at 15% 20%, rgba(58, 109, 240, 0.55), transparent 60%),
+    radial-gradient(ellipse 38vmax 30vmax at 85% 30%, rgba(56, 189, 248, 0.35), transparent 60%),
+    radial-gradient(ellipse 45vmax 38vmax at 50% 110%, rgba(99, 102, 241, 0.45), transparent 60%),
+    #070d1c;
+}
+.dashboard *, .dashboard *::before, .dashboard *::after { box-sizing: border-box; }
+.dashboard button { font-family: inherit; }
+.dashboard h1, .dashboard h2 { color: #fff; }
+
+
+.dashboard-inner {
+  width: 100%;
+  max-width: 1120px;
+  min-height: 100%;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding:
+    max(clamp(20px, 4vh, 36px), env(safe-area-inset-top))
+    clamp(20px, 4vw, 48px)
+    max(clamp(20px, 4vh, 36px), env(safe-area-inset-bottom));
+}
