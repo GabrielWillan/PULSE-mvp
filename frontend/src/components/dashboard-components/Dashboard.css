@@ -1,14 +1,15 @@
 .dashboard{
-  --tx: #f1f5ff;
-  --mu: #b4c1e0;
-  --accent: #0071e3;
-  --accent-hover: #1784f2;
-  --glow: rgba(0, 113, 227, 0.4);
-  --glass: rgba(255, 255, 255, 0.09);
-  --glass-line: rgba(255, 255, 255, 0.18);
-  --sep: rgba(255, 255, 255, 0.14);
-  --chev: rgba(235, 235, 245, 0.38);
-  --icon: #8db8ff;
+  --tx: #eaf1ff;
+  --mu: #8aa0c8;
+  --accent: #3b82f6;
+  --accent-hover: #5b9bf8;
+  --glow: rgba(59, 130, 246, 0.4);
+  --glass: #0e1d3b;
+  --glass-line: #1a2f5a;
+  --sep: #1a2f5a;
+  --chev: rgba(138, 160, 200, 0.5);
+  --icon: #6aa8ff;
+  --shadow :#02061898;
 
 
   color-scheme: dark;
@@ -22,10 +23,8 @@
     system-ui, Inter, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   background:
-    radial-gradient(ellipse 45vmax 30vmax at 15% 20%, rgba(58, 109, 240, 0.55), transparent 60%),
-    radial-gradient(ellipse 38vmax 30vmax at 85% 30%, rgba(56, 189, 248, 0.35), transparent 60%),
-    radial-gradient(ellipse 45vmax 38vmax at 50% 110%, rgba(99, 102, 241, 0.45), transparent 60%),
-    #070d1c;
+    linear-gradient(180deg, #0f2f6b 0, #08142b 340px) no-repeat,
+    #08142b;
 }
 
 .dashboard *, .dashboard *::before, .dashboard *::after { box-sizing: border-box; }
@@ -57,7 +56,7 @@
 .dashboard-logo {
   width: 34px; height: 34px; border-radius: 10px;
   display: grid; place-items: center; color: #fff;
-  background: linear-gradient(135deg, #0a02ef, #0071e3);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
   box-shadow: 0 6px 14px var(--glow);
 }
 .dashboard-menu-btn {
@@ -67,17 +66,18 @@
   display: grid;
   place-items: center;
 
+
   color: var(--tx);
   background: var(--glass);
   border: 0.5px solid var(--glass-line);
-
-  box-shadow: none;
+  
+  box-shadow: 0 4px 8px var(--shadow);
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .dashboard-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: #16336a;
 }
 .dashboard-name { font-weight: 700; font-size: 19px; letter-spacing: 0.02em; }
 
@@ -90,10 +90,10 @@
   place-items: center;
 
   color: var(--tx);
-  background: linear-gradient(135deg, #0a02ef, #0071e3);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
   border: 1px solid var(--glass-line);
 
-  box-shadow: none;
+  box-shadow: 0 6px 14px var(--glow);
   cursor: pointer;
   transition: background 0.2s ease;
 
@@ -101,4 +101,22 @@
 
 .dashboard-add-exercise-btn:hover {
   background:var(--accent-hover);
+}
+
+.dashboard-date-ovw{
+  min-width: 180px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+
+  color:var(--mu);
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+}
+
+
+.dashboard-date-format{
+  font-size: 15px;
+  font-weight: 500;
 }

@@ -1,4 +1,5 @@
 import"./DashBoard.css"
+import { useEffect, useState } from "react";
 
 const ActivityIcon = () => (
   <svg
@@ -53,12 +54,52 @@ const AddIcon = () => (
 
 
 
+function useToday(){
+  const[today, setToday] = useState(()=> new Date());
+
+  useEffect(()=>{
+    const now = new Date()
+    const nextMidnight = new Date(
+      now.getFullYear,
+      now.getMonth,
+      now.getDate + 1
+    );
+        const id = setTimeout(
+      () => setToday(new Date()),
+      nextMidnight - now + 1000
+    );
+    return () => clearTimeout(id);
+  }, [today]);
+  return today
+}
 
 
+function currentToday(date){
+  const weekday = date.toLocaleDateString("en-GB",{
+    weekday: "long",
+  });
+
+
+  const dayMonth = date.toLocaleDateString("en-GB",{
+    day:"numeric",
+    month:"long",
+  });
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return {
+    label: `${weekday}, ${dayMonth}`,
+    iso: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}`,
+  };
+}
 
 
 
 export function DashBoard(){
+  const today = useToday();
+  const {label, iso} = currentToday(today);
 
   return(
     <div className="dashboard">
@@ -72,7 +113,11 @@ export function DashBoard(){
             </div>
           </div>
           <div className="dashboard-right">
-            <div className="dashboard-date-overview">day-dd-mm</div>
+            <time className="dashboard-date-ovw" dateTime={iso}>
+              <span className="dashboard-date-format">
+                {label}
+              </span>
+            </time>
             <button className="dashboard-add-exercise-btn"><AddIcon /></button>
 
           </div>
