@@ -96,8 +96,6 @@ function currentToday(date){
 }
 
 
-
-
 function titleShowCase(){
   const hour = new Date().getHours();
   if (hour < 12){
@@ -111,10 +109,33 @@ function titleShowCase(){
   
 }
 
+
+function getWeekNumber(date){
+  const d = new Date(Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ));
+
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(
+    (((d - yearStart) / 86400000) + 1) / 7
+  );
+}
+
+
+const weekdays = ["Day1","Day2", "Day3","Day4","Day5","Day6","Day7"]
+
+
+
+
 export function DashBoard(){
   const today = useToday();
   const {label, iso} = currentToday(today);
-  const titleMessage = titleShowCase()
+  const titleMessage = titleShowCase();
+  const weekNumber = getWeekNumber(new Date());
 
   return(
     <div className="dashboard">
@@ -150,6 +171,31 @@ export function DashBoard(){
               <span>A quick look at your week and what's next.</span>
             </div>
 
+          </div>
+          <div className="dashboard-weekday-container">
+            <div className="dashboard-weekday-hdr">
+              <div className="weekday-hdr-left">
+                <span className="weekday-name">
+                  Week {weekNumber}
+                </span>
+
+              </div>
+
+              <div className="weekday-hdr-right">
+                <span className="sessions-mini-tracker">
+                  x sessions completed
+                </span>
+              </div>
+            </div>
+
+            <div className="dashboard-weekday-main">
+              {weekdays.map((day)=>{
+                return <div className="weekday-item" key={day}>
+                  {day}
+                  <div className="weekday-checker"></div>
+                  </div>
+              })}
+            </div>
           </div>
         </main>
 

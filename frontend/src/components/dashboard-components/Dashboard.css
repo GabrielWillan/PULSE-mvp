@@ -3,8 +3,10 @@
   --mu: #8aa0c8;
   --accent: #3b82f6;
   --accent-hover: #5b9bf8;
+  --glass-hover:#5b9af88c;
   --glow: rgba(59, 130, 246, 0.4);
   --glass: #0e1d3b;
+  --darkglass:#050e1f;
   --glass-line: #1a2f5a;
   --sep: #1a2f5a;
   --chev: rgba(138, 160, 200, 0.5);
@@ -150,4 +152,71 @@
   letter-spacing: 1;
 
   color: var(--mu);
+}
+
+
+
+.dashboard-weekday-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+  width: 100%;
+  border-radius: 20px;
+  padding: 30px;
+
+
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-line);
+
+}
+
+.dashboard-weekday-hdr{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dashboard-weekday-main{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 87%;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.weekday-item{
+  display: flex;
+  align-items:center; 
+  flex-direction: column;
+  justify-content: center;
+  width: 120px;
+  height: 90px;
+  border-radius: 20px;
+
+  background: var(--glass);
+  
+  box-shadow: var(--glass-line);
+
+}
+
+.weekday-checker {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  
+  background: var(--chev);
+  border: 1px var(--darkglass);
+  
+}
+
+.weekday-item:hover{
+  background: var(--glass-hover);
 }
