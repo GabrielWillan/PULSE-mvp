@@ -115,8 +115,39 @@
   border: 1px solid var(--glass-line);
 }
 
-
 .dashboard-date-format{
   font-size: 15px;
   font-weight: 500;
+}
+
+
+.dashboard-titles-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.dashboard-sub-top{
+  font-weight: 800;
+  font-size:15px ;
+  letter-spacing:0.1em ;
+  
+  color: var(--accent);
+}
+
+.dashboard-title h1{
+  font-weight: 800;
+  font-size: 50px;
+  letter-spacing: -0.2;
+
+  color:var(--tx);
+}
+
+.dashboard-sub-low{
+  font-weight: 500;
+  font-size: 20px ;
+  letter-spacing: 1;
+
+  color: var(--mu);
 }

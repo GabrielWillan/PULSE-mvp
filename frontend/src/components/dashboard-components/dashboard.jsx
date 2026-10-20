@@ -60,9 +60,9 @@ function useToday(){
   useEffect(()=>{
     const now = new Date()
     const nextMidnight = new Date(
-      now.getFullYear,
-      now.getMonth,
-      now.getDate + 1
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1
     );
         const id = setTimeout(
       () => setToday(new Date()),
@@ -97,9 +97,24 @@ function currentToday(date){
 
 
 
+
+function titleShowCase(){
+  const hour = new Date().getHours();
+  if (hour < 12){
+    return "Good morning"
+  } else if (hour < 18){
+    return "Good afternoon";
+  }else{
+    return "Good evening";
+  }
+
+  
+}
+
 export function DashBoard(){
   const today = useToday();
   const {label, iso} = currentToday(today);
+  const titleMessage = titleShowCase()
 
   return(
     <div className="dashboard">
@@ -122,6 +137,21 @@ export function DashBoard(){
 
           </div>
         </header>
+
+        <main className="dashboard-main">
+          <div className="dashboard-titles-container">
+            <div className="dashboard-sub-top">
+              <span>YOUR   TRAINING   CALENDAR</span>
+            </div>
+            <div className="dashboard-title">
+              <h1>{titleMessage}</h1>
+            </div>
+            <div className="dashboard-sub-low">
+              <span>A quick look at your week and what's next.</span>
+            </div>
+
+          </div>
+        </main>
 
 
       </div>
