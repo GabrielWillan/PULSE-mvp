@@ -197,6 +197,22 @@ export function DashBoard(){
               })}
             </div>
           </div>
+
+          <div className="dashboard-status-container">
+            <div className="left-inner-container">
+              <div className="current-session">
+
+              </div>
+            </div>
+
+            <div className="right-inner-container">
+              <div className="last-session">
+                
+              </div>
+
+            </div>
+
+          </div>
         </main>
 
 
