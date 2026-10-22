@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../menu_components/Menu.css";
 import { postRoutine, getAllRoutines } from "../api_components";
 
@@ -122,6 +123,7 @@ function RoutineCard({ routine, onSelect }) {
 export function RoutineMenu({ onCreate, onSelect }) {
   const [allRoutines, setAllRoutines] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { label, iso } = formatToday(useToday());
 
@@ -171,6 +173,11 @@ export function RoutineMenu({ onCreate, onSelect }) {
     setIsFormOpen(true);
   }
 
+  function handleSelectRoutine(routine) {
+    onSelect?.(routine);
+    navigate("/dashboard/", { state: { routine } });
+  }
+
   return (
     <div className="routines">
       <div className="routines-inner">
@@ -199,7 +206,10 @@ export function RoutineMenu({ onCreate, onSelect }) {
             <ul className="routines-group" aria-labelledby="routines-title">
               {allRoutines.map((routine) => (
                 <li key={routine.id}>
-                  <RoutineCard routine={routine} onSelect={onSelect} />
+                  <RoutineCard
+                    routine={routine}
+                    onSelect={handleSelectRoutine}
+                  />
                 </li>
               ))}
             </ul>

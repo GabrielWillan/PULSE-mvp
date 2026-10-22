@@ -1,18 +1,18 @@
-.dashboard{
+
+.dashboard {
   --tx: #eaf1ff;
   --mu: #8aa0c8;
   --accent: #3b82f6;
   --accent-hover: #5b9bf8;
-  --glass-hover:#5b9af88c;
+  --glass-hover: #5b9af88c;
   --glow: rgba(59, 130, 246, 0.4);
   --glass: #0e1d3b;
-  --darkglass:#050e1f;
+  --darkglass: #050e1f;
   --glass-line: #1a2f5a;
   --sep: #1a2f5a;
   --chev: rgba(138, 160, 200, 0.5);
   --icon: #6aa8ff;
-  --shadow :#02061898;
-
+  --shadow: #02061898;
 
   color-scheme: dark;
   width: 100%;
@@ -21,18 +21,28 @@
   overflow-y: auto;
   box-sizing: border-box;
   color: var(--tx);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    system-ui, Inter, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "SF Pro Text", system-ui, Inter, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   background:
     linear-gradient(180deg, #0f2f6b 0, #08142b 340px) no-repeat,
     #08142b;
 }
 
-.dashboard *, .dashboard *::before, .dashboard *::after { box-sizing: border-box; }
-.dashboard button { font-family: inherit; }
-.dashboard h1, .dashboard h2 { color: #fff; }
+.dashboard *,
+.dashboard *::before,
+.dashboard *::after {
+  box-sizing: border-box;
+}
 
+.dashboard button {
+  font-family: inherit;
+}
+
+.dashboard h1,
+.dashboard h2 {
+  color: #fff;
+}
 
 .dashboard-inner {
   width: 100%;
@@ -48,31 +58,60 @@
     max(clamp(20px, 4vh, 36px), env(safe-area-inset-bottom));
 }
 
-
-
-.dashboard-hdr { display: flex; align-items: center; justify-content: space-between; gap: 50px; flex: none; }
-.dashboard-left{display: flex; align-items:center; justify-content: space-between; gap: 40px;} 
-.dashboard-right{display: flex; align-items: center; justify-content: space-between; gap: 40px;}
-.dashboard-date { font-size: 16px; font-weight: 500; color: var(--mu); }
-.dashboard-brand { display: flex; align-items: center; gap: 10px; }
-.dashboard-logo {
-  width: 34px; height: 34px; border-radius: 10px;
-  display: grid; place-items: center; color: #fff;
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
-  box-shadow: 0 6px 14px var(--glow);
+.dashboard-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  flex: none;
 }
-.dashboard-menu-btn {
-  width: 34px;
-  height: 34px;
+
+.dashboard-left {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-right {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-date {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--mu);
+}
+
+.dashboard-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-logo {
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: grid;
   place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 6px 14px var(--glow);
+}
 
-
+.dashboard-menu-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
   color: var(--tx);
   background: var(--glass);
   border: 0.5px solid var(--glass-line);
-  
   box-shadow: 0 4px 8px var(--shadow);
   cursor: pointer;
   transition: background 0.2s ease;
@@ -81,163 +120,862 @@
 .dashboard-menu-btn:hover {
   background: #16336a;
 }
-.dashboard-name { font-weight: 700; font-size: 19px; letter-spacing: 0.02em; }
 
+.dashboard-name,
+.logo-name {
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.02em;
+}
 
 .dashboard-add-exercise-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-
   color: var(--tx);
   background: linear-gradient(135deg, #60a5fa, #3b82f6);
   border: 1px solid var(--glass-line);
-
   box-shadow: 0 6px 14px var(--glow);
   cursor: pointer;
   transition: background 0.2s ease;
-
 }
 
 .dashboard-add-exercise-btn:hover {
-  background:var(--accent-hover);
+  background: var(--accent-hover);
 }
 
-.dashboard-date-ovw{
+.dashboard-date-ovw {
   min-width: 180px;
   border-radius: 20px;
   display: grid;
   place-items: center;
-  padding: 5px;
-
-  color:var(--mu);
+  padding: 10px 16px;
+  color: var(--mu);
   background: var(--glass);
   border: 1px solid var(--glass-line);
 }
 
-.dashboard-date-format{
+.dashboard-date-format {
   font-size: 15px;
   font-weight: 500;
 }
 
+.dashboard-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 
-.dashboard-titles-container{
+.dashboard-titles-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 30px;
+  margin-top: 42px;
+  text-align: center;
 }
 
-.dashboard-sub-top{
+.dashboard-sub-top {
   font-weight: 800;
-  font-size:15px ;
-  letter-spacing:0.1em ;
-  
+  font-size: 13px;
+  letter-spacing: 0.16em;
   color: var(--accent);
 }
 
-.dashboard-title h1{
+.dashboard-title h1 {
+  margin: 16px 0 8px;
   font-weight: 800;
-  font-size: 50px;
-  letter-spacing: -0.2;
-
-  color:var(--tx);
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  color: var(--tx);
 }
 
-.dashboard-sub-low{
+.dashboard-sub-low {
   font-weight: 500;
-  font-size: 20px ;
-  letter-spacing: 1;
-
+  font-size: 16px;
+  letter-spacing: 0.2px;
   color: var(--mu);
 }
 
-
-
-.dashboard-weekday-container{
+.dashboard-weekday-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
+  align-items: stretch;
+  margin-top: 30px;
   width: 100%;
-  border-radius: 20px;
-  padding: 20px;
-  height: 20%;
-
-
+  border-radius: 24px;
+  padding: 22px 24px;
+  min-height: 176px;
   background: var(--glass);
   border: 1px solid var(--glass-line);
-  box-shadow: var(--glass-line);
-
 }
 
-.dashboard-weekday-hdr{
+.dashboard-weekday-hdr {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 96%;
+  gap: 16px;
+  width: 100%;
 }
 
-.weekday-hdr-left{
-  font-weight: 800;
-  font-size: 20px;
+.weekday-hdr-left {
+  font-weight: 700;
+  font-size: 19px;
   letter-spacing: -0.2px;
   color: var(--tx);
 }
 
-.weekday-hdr-right{
+.weekday-hdr-right {
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: -0.2px;
   color: var(--mu);
 }
 
-
-
-.dashboard-weekday-main{
-  display: flex;
+.dashboard-weekday-main {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   align-items: center;
   justify-content: space-between;
-  width: 87%;
-  margin-top: 10px;
+  gap: 10px;
+  width: 100%;
+  margin-top: 20px;
 }
 
-.weekday-item{
+.weekday-item {
   display: flex;
-  align-items:center; 
+  align-items: center;
   flex-direction: column;
   justify-content: center;
-  width: 120px;
-  height: 90px;
-  border-radius: 20px;
-
-  background: var(--glass);
-  
-  box-shadow: var(--glass-line);
-
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  height: 72px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  color: var(--tx);
+  font-size: 14px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .weekday-checker {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
+  flex: none;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-top: 10px;
-  
   background: var(--chev);
-  border: 1px var(--darkglass);
-  
+  border: 1px solid var(--darkglass);
 }
 
-.weekday-item:hover{
+.weekday-item:hover {
   background: var(--glass-hover);
   color: var(--accent-hover);
 }
 
 .weekday-item:hover .weekday-checker {
   background: var(--accent-hover);
+}
+
+.weekday-item-active {
+  color: var(--icon);
+  background: #19376d;
+  border-color: #19376d;
+}
+
+.weekday-item-active .weekday-checker {
+  background: var(--icon);
+}
+
+.weekday-item-completed .weekday-checker {
+  background: #4ade80;
+}
+
+/* Dashboard cards */
+
+.dashboard-status-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+  align-items: stretch;
+  gap: 22px;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.left-inner-container,
+.right-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.current-session,
+.last-session,
+.calorie-tracker,
+.weekly-progress {
+  min-width: 0;
+  border-radius: 24px;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+}
+
+/* Today's selected session */
+
+.current-session {
+  min-height: 225px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px;
+  background: linear-gradient(125deg, #173f82 0%, #10264b 62%, #0e1d3b 100%);
+  border-color: #2857a0;
+}
+
+.session-card-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--icon);
+}
+
+.session-card-title {
+  margin: 14px 0 6px;
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 750;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+
+.session-card-description {
+  margin: 0;
+  color: var(--mu);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.current-session-footer {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.dashboard-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 6px 14px var(--glow);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dashboard-primary-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.rest-day-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  color: var(--icon);
+  background: rgba(59, 130, 246, 0.12);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Last session */
+
+.last-session {
+  min-height: 150px;
+  padding: 24px 28px;
+}
+
+.section-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.section-card-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.last-session-day {
+  color: var(--mu);
+  font-size: 13px;
+  text-align: right;
+}
+
+.last-session-content {
+  margin-top: 24px;
+}
+
+.last-session-content h3 {
+  margin: 0 0 7px;
+  color: var(--tx);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.last-session-content p {
+  margin: 0;
+  color: var(--mu);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.metadata-separator {
+  margin: 0 6px;
+  color: var(--chev);
+}
+
+/* Calorie tracker placeholder */
+
+.calorie-tracker {
+  min-height: 225px;
+  padding: 26px;
+}
+
+.calorie-tracker-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 24px;
+}
+
+.calorie-placeholder-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--glass-line);
+  border-radius: 12px;
+  color: var(--icon);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.calorie-tracker-content h3 {
+  margin: 15px 0 6px;
+  color: var(--tx);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.calorie-tracker-content p {
+  margin: 0;
+  max-width: 300px;
+  color: var(--mu);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.coming-soon-label {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 6px 9px;
+  border: 1px solid var(--glass-line);
+  border-radius: 7px;
+  color: var(--icon);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+/* Weekly progress */
+
+.weekly-progress {
+  min-height: 175px;
+  padding: 24px 26px;
+}
+
+.weekly-progress-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.weekly-progress-number {
+  color: var(--icon);
+  font-size: 54px;
+  font-weight: 750;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.weekly-progress-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--mu);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.weekly-progress-track {
+  width: 100%;
+  height: 9px;
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #1b3159;
+}
+
+.weekly-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.weekly-progress-caption {
+  margin: 8px 0 0;
+  color: var(--mu);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Keyboard accessibility */
+
+.dashboard button:focus-visible {
+  outline: 2px solid var(--icon);
+  outline-offset: 3px;
+}
+
+/* Responsive layout */
+
+@media (min-width: 1100px) {
+  .dashboard-status-container {
+    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-inner {
+    padding: 22px 18px;
+  }
+
+  .dashboard-hdr {
+    gap: 14px;
+  }
+
+  .dashboard-left {
+    gap: 12px;
+  }
+
+  .dashboard-right {
+    gap: 10px;
+  }
+
+  .dashboard-date-ovw {
+    min-width: 0;
+    padding: 9px 12px;
+  }
+
+  .dashboard-date-format {
+    font-size: 12px;
+  }
+
+  .dashboard-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .logo-name {
+    font-size: 17px;
+  }
+
+  .dashboard-menu-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dashboard-add-exercise-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dashboard-titles-container {
+    margin-top: 34px;
+  }
+
+  .dashboard-title h1 {
+    font-size: 36px;
+  }
+
+  .dashboard-sub-low {
+    font-size: 14px;
+  }
+
+  .dashboard-weekday-container {
+    padding: 18px 14px;
+    min-height: auto;
+  }
+
+  .dashboard-weekday-main {
+    gap: 4px;
+    margin-top: 16px;
+  }
+
+  .weekday-item {
+    height: 62px;
+    font-size: 11px;
+    border-radius: 12px;
+  }
+
+  .dashboard-status-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .left-inner-container,
+  .right-inner-container {
+    gap: 16px;
+  }
+
+  .current-session,
+  .last-session,
+  .calorie-tracker,
+  .weekly-progress {
+    padding: 22px;
+  }
+
+  .current-session,
+  .calorie-tracker {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 430px) {
+  .dashboard-inner {
+    padding: 18px 12px;
+  }
+
+  .dashboard-left {
+    gap: 8px;
+  }
+
+  .dashboard-right {
+    gap: 7px;
+  }
+
+  .logo-name {
+    font-size: 15px;
+  }
+
+  .dashboard-date-format {
+    font-size: 10px;
+  }
+
+  .dashboard-date-ovw {
+    padding: 8px;
+  }
+
+  .dashboard-sub-top {
+    font-size: 10px;
+  }
+
+  .dashboard-title h1 {
+    font-size: 31px;
+  }
+
+  .dashboard-weekday-hdr {
+    align-items: flex-start;
+  }
+
+  .weekday-hdr-left {
+    font-size: 16px;
+  }
+
+  .weekday-hdr-right {
+    font-size: 11px;
+    text-align: right;
+  }
+
+  .dashboard-weekday-main {
+    gap: 2px;
+  }
+
+  .weekday-item {
+    height: 54px;
+    font-size: 10px;
+  }
+
+  .weekday-checker {
+    width: 5px;
+    height: 5px;
+    margin-top: 8px;
+  }
+
+  .session-card-title {
+    font-size: 23px;
+  }
+
+  .section-card-heading h2 {
+    font-size: 17px;
+  }
+
+  .last-session-day {
+    font-size: 11px;
+  }
+
+  .last-session-content p {
+    font-size: 12px;
+  }
+}
+
+/* Compact desktop dashboard: fit everything in one screen */
+
+@media (min-width: 761px) {
+  .dashboard {
+    overflow-y: hidden;
+  }
+
+  .dashboard-inner {
+    min-height: 0;
+    height: 100%;
+    padding: 18px 36px;
+  }
+
+  .dashboard-hdr {
+    gap: 24px;
+  }
+
+  .dashboard-menu-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dashboard-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dashboard-add-exercise-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dashboard-date-ovw {
+    padding: 8px 14px;
+  }
+
+  .dashboard-titles-container {
+    margin-top: 18px;
+  }
+
+  .dashboard-title h1 {
+    margin: 8px 0 4px;
+    font-size: clamp(30px, 3vw, 40px);
+  }
+
+  .dashboard-sub-top {
+    font-size: 11px;
+  }
+
+  .dashboard-sub-low {
+    font-size: 14px;
+  }
+
+  .dashboard-weekday-container {
+    margin-top: 18px;
+    min-height: 0;
+    padding: 14px 20px;
+    border-radius: 20px;
+  }
+
+  .weekday-hdr-left {
+    font-size: 17px;
+  }
+
+  .weekday-hdr-right {
+    font-size: 12px;
+  }
+
+  .dashboard-weekday-main {
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .weekday-item {
+    height: 54px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  .weekday-checker {
+    width: 6px;
+    height: 6px;
+    margin-top: 7px;
+  }
+
+  .dashboard-status-container {
+    margin-top: 16px;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .left-inner-container,
+  .right-inner-container {
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .current-session {
+    min-height: 0;
+    flex: 1.2;
+    padding: 20px 24px;
+  }
+
+  .session-card-title {
+    margin: 10px 0 5px;
+    font-size: clamp(21px, 2vw, 26px);
+  }
+
+  .session-card-description {
+    font-size: 14px;
+  }
+
+  .current-session-footer {
+    padding-top: 12px;
+  }
+
+  .dashboard-primary-btn {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .last-session {
+    min-height: 0;
+    flex: 0.8;
+    padding: 18px 24px;
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .section-card-heading h2 {
+    font-size: 17px;
+  }
+
+  .last-session-content {
+    margin-top: 14px;
+    text-align: left;
+    align-items: flex-start;
+    justify-items: start;
+  }
+
+  .last-session-content h3 {
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+
+  .last-session-content p {
+    font-size: 12px;
+  }
+
+  .last-session-day {
+    font-size: 12px;
+  }
+
+  .calorie-tracker {
+    height: auto;
+    min-height: 0;
+    flex: 1;
+    padding: 16px 18px;
+    overflow: hidden;
+  }
+
+  .calorie-tracker-content {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 9px;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .calorie-placeholder-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .calorie-tracker-content h3 {
+    grid-column: 2;
+    margin: 0 0 2px;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .calorie-tracker-content p {
+    grid-column: 2;
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.35;
+    margin-top: 20px;
+    overflow-wrap: break-word;
+  }
+
+  .coming-soon-label {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 25px;
+    padding: 3px 6px;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .weekly-progress {
+    min-height: 0;
+    flex: 1;
+    padding: 18px 22px;
+  }
+
+  .weekly-progress-main {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .weekly-progress-number {
+    font-size: 44px;
+  }
+
+  .weekly-progress-label {
+    font-size: 13px;
+  }
+
+  .weekly-progress-track {
+    height: 8px;
+    margin-top: 35px;
+  }
+
+  .weekly-progress-caption {
+    margin-top: 16px;
+    font-size: 12px;
+  }
 }
