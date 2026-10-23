@@ -76,13 +76,12 @@ class FetchRoutine:
         return days
     
 
-
-
 def fetch_all_routines(db_path="database/main/pulse.db"):
     with sq.connect(db_path) as db:
         routines = db.execute(
             """
-            SELECT id, name FROM routinebase
+            SELECT id, name 
+            FROM routinebase
             """
         ).fetchall()
 
@@ -90,3 +89,18 @@ def fetch_all_routines(db_path="database/main/pulse.db"):
         {"id": routine[0], "name": routine[1]}
         for routine in routines
     ]
+
+def remove_routines(routine_id: int):
+    with sq.connect("database/main/pulse.db") as db:
+        try:
+            db.execute(
+                """
+                DELETE FROM routinebase
+                WHERE id = ?
+                """,
+                (routine_id, )
+            )
+            db.commit()
+        finally:
+            db.close()
+        
