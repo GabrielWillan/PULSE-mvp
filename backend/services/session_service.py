@@ -65,4 +65,59 @@ def end_sessions(sessions_id:int):
         )
         db.commit()
 
+def fetch_days(routine_id:int):
+    with sq.connect("database/main/pulse.db") as db:
+        db.row_factory = sq.Row
+        routine = db.execute(
+            """
+            SELECT id 
+            FROM routinebase
+            WHERE id = ?
+            """,
+            (routine_id, )
+        ).fetchone()
 
+        days = db.execute(
+            """
+            SELECT 
+                rd.id,
+                rd.day_name,
+                ed.id AS exercise_id
+                ed.name AS exercise_name
+                ed.sets,
+                ed.reps,
+                ed.rest_time
+                ed.note
+            FROM routinedays as rd
+            LEFT JOIN exercisedetails as ed
+            ON ed.day_id = ed.id
+            WHERE ed.routine_id = ?
+            ORDERD BY ed.id
+            """,
+            (routine_id, )
+        ).fetchone()
+
+        result = {}
+        for day in days:
+            day_name = day["name"]
+
+            if day_name not in result:
+                result[day_name] = {
+                    "id": day["id"],
+                    "day_name":day_name,
+                    "exercises": [],
+                }
+            
+            if day["exercise_id"] is not None:
+                result[day_name] = {
+                    "id": day["exercise_id"],
+                    "name": day["exercise_name"],
+                    "sets": day["sets"],
+                    "reps": day["reps"],
+                    "rest_time": day["rest_time"],
+                    "note": day["note"],
+                }
+        
+        return (result.values)
+
+        

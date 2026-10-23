@@ -37,3 +37,5 @@ def fetchall_routine():
    return all_routines
    
 
+
+@app.get("/fetchroutinedays", status_code=status.HTTP_200_OK)
