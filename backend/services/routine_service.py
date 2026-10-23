@@ -90,17 +90,17 @@ def fetch_all_routines(db_path="database/main/pulse.db"):
         for routine in routines
     ]
 
-def remove_routines(routine_id: int):
-    with sq.connect("database/main/pulse.db") as db:
-        try:
-            db.execute(
-                """
-                DELETE FROM routinebase
-                WHERE id = ?
-                """,
-                (routine_id, )
-            )
-            db.commit()
-        finally:
-            db.close()
-        
+def delete_routines(routine_id: int):
+    db = sq.connect("database/main/pulse.db")
+    try:
+        db.execute(
+            """
+            DELETE FROM routinebase
+            WHERE id = ?
+            """,
+            (routine_id, )
+        )
+        db.commit()
+    finally:
+        db.close()
+    

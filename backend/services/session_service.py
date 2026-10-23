@@ -77,6 +77,9 @@ def fetch_days(routine_id:int):
             (routine_id, )
         ).fetchone()
 
+        if routine is None:
+            raise KeyError("Placeholder for now")
+
         days = db.execute(
             """
             SELECT 
@@ -109,15 +112,15 @@ def fetch_days(routine_id:int):
                 }
             
             if day["exercise_id"] is not None:
-                result[day_name] = {
+                result[day_name]["exercises"].append({
                     "id": day["exercise_id"],
                     "name": day["exercise_name"],
                     "sets": day["sets"],
                     "reps": day["reps"],
                     "rest_time": day["rest_time"],
                     "note": day["note"],
-                }
+                }) 
         
-        return (result.values)
+        return list(result.values())
 
         
