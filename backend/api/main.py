@@ -4,6 +4,9 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field  # noqa: F401
 from services.routine_service import CreateRoutine, FetchRoutine, fetch_all_routines
+from services.session_service import fetch_days
+from api.customerror import RoutineIDNotFoundError
+
 
 app = FastAPI()
 
@@ -22,6 +25,9 @@ app.add_middleware(
 class RoutineCreateValidator(BaseModel):
     title_name:str
 
+class FetchRoutineDays(BaseModel):
+   routine_id:int
+
 @app.post("/createroutine", status_code= status.HTTP_201_CREATED)
 def create_routinebase(validator:RoutineCreateValidator):
     routine_id = CreateRoutine(validator.title_name)._createroutine
@@ -39,3 +45,11 @@ def fetchall_routine():
 
 
 @app.get("/fetchroutinedays", status_code=status.HTTP_200_OK)
+def fetch_routine_days(routine_days:FetchRoutineDays):
+   try:
+    days_data = fetch_days(routine_days.routine_id)
+   except RoutineIDNotFoundError:
+      raise RoutineIDNotFoundError(f"Routine id {routine_days.routine_id} is not available")
+   
+   return days_data
+
