@@ -4,7 +4,7 @@ from api.customerror import RoutineIDNotFoundError
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field  # noqa: F401
-from services.exercise_service import add_workout, show_workouts
+from services.exercise_service import add_workout, search_workouts, show_workouts
 from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
@@ -15,15 +15,15 @@ from services.session_service import fetch_days
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = origins,
-    allow_methods = ["*"],
-    allow_headers = ["*"],
+   allow_origins=[
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+   ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 #routine createvalidator
@@ -35,6 +35,9 @@ class RoutineidValidator(BaseModel):
 
 class ExerciseidValidator(BaseModel):
    exercise_id:int
+
+class ExerciseNameValidator(BaseModel):
+   exercise_name:str
 
 class WorkoutAddValidator(BaseModel):
    day_id:int
@@ -58,25 +61,24 @@ def fetchall_routine():
    return all_routines
 
 
-
 @app.delete("/deleteroutine", status_code=status.HTTP_200_OK)
 def deleted_routine(routines:RoutineidValidator):
    try:
       delete_routines(routines.routine_id)
    except RoutineIDNotFoundError:
       raise RoutineIDNotFoundError(f"Routine id {routines.routine_id} is not available")
-   
-
 
 @app.get("/fetchroutinedays", status_code=status.HTTP_200_OK)
-def fetch_routine_days(routine_days:RoutineidValidator):
-   try:
-    days_data = fetch_days(routine_days.routine_id)
-   except RoutineIDNotFoundError:
-      raise RoutineIDNotFoundError(f"Routine id {routine_days.routine_id} is not available")
-   
-   return days_data
+def fetch_routine_days(routine_id: int):
+    try:
+        days_data = fetch_days(routine_id)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Routine id {routine_id} is not available",
+        )
 
+    return days_data
 
 @app.post("/addworkout", status_code= status.HTTP_200_OK)
 def added_workouts(workouts: WorkoutAddValidator):
@@ -92,9 +94,6 @@ def added_workouts(workouts: WorkoutAddValidator):
 
    return new_workout
 
-
-
-
 @app.get("/showworkout", status_code= status.HTTP_200_OK)
 def showing_workouts():
    try:
@@ -103,3 +102,9 @@ def showing_workouts():
       raise KeyError("placeholder")
    
    return get_workout
+
+
+@app.get("/searchworkout")
+def searched_exercises(exercise_name: str):
+    result_query = search_workouts(exercise_name)
+    return result_query

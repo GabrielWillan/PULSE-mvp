@@ -58,23 +58,26 @@ def show_workouts():
 
 
 
-def search_workouts(exercise_name:str):
+def search_workouts(exercise_name: str):
     db = sq.connect("database/main/pulse.db")
 
-    search_param = f"%{exercise_name}%"
+    search_param = f"%{exercise_name.lower()}%"
+
     try:
         search_result = db.execute(
             """
-            SELECT name
+            SELECT id, name
             FROM catalog
-            WHERE lower(name) LIKE?
+            WHERE lower(name) LIKE ?
             LIMIT 20;
             """,
             (search_param,)
         ).fetchall()
-        return [row[0] for row in search_result ] 
+
+        return [
+            {"id": row[0], "name": row[1]}
+            for row in search_result
+        ]
+
     finally:
         db.close()
-    
-
-

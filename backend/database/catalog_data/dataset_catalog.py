@@ -1,9 +1,10 @@
+
 import pandas as pd
 
 df = pd.read_csv("ExercisesDataset.csv")
 
+df = df[["Exercise_Name", "muscle_gp", "*Equipment*"]].copy()
 
-df = df[["Exercise_Name", "muscle_gp", "Equipment"]].copy()
 df = df.sort_values(
     "Exercise_Name",
     key=lambda names: names.str.casefold(),
@@ -12,5 +13,4 @@ df = df.sort_values(
 
 df = df.fillna("NONE")
 
-
-df.to_csv('Updated_ExerciseDataset.csv')
+df.to_csv("Updated_ExerciseDataset.csv", index=False)

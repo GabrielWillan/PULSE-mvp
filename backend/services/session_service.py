@@ -65,65 +65,72 @@ def end_sessions(sessions_id:int):
         )
         db.commit()
 
-def fetch_days(routine_id:int):
+def fetch_days(routine_id: int):
     with sq.connect("database/main/pulse.db") as db:
         db.row_factory = sq.Row
+
         routine = db.execute(
             """
-            SELECT id 
+            SELECT id
             FROM routinebase
             WHERE id = ?
             """,
-            (routine_id, )
+            (routine_id,),
         ).fetchone()
 
         if routine is None:
-            raise KeyError("Placeholder for now")
+            raise KeyError(f"Routine id {routine_id} was not found")
 
         days = db.execute(
             """
-            SELECT 
-                rd.id,
+            SELECT
+                rd.id AS day_id,
                 rd.day_name,
-                ed.id AS exercise_id
-                ed.name AS exercise_name
+                ed.id AS exercise_detail_id,
+                ed.exercise_id,
+                c.name AS exercise_name,
                 ed.sets,
                 ed.reps,
-                ed.rest_time
+                ed.rest_time,
                 ed.note
-            FROM routinedays as rd
-            LEFT JOIN exercisedetails as ed
-            ON ed.day_id = ed.id
-            WHERE ed.routine_id = ?
-            ORDERD BY ed.id
+            FROM routinedays AS rd
+            LEFT JOIN exercisedetails AS ed
+                ON ed.day_id = rd.id
+            LEFT JOIN catalog AS c
+                ON c.id = ed.exercise_id
+            WHERE rd.routine_id = ?
+            ORDER BY rd.id;
             """,
-            (routine_id, )
-        ).fetchone()
+            (routine_id,),
+        ).fetchall()
 
         result = {}
-        for day in days:
-            day_name = day["name"]
 
-            if day_name not in result:
-                result[day_name] = {
-                    "id": day["id"],
-                    "day_name":day_name,
+        for day in days:
+            day_id = day["day_id"]
+            day_name = day["day_name"]
+
+            if day_id not in result:
+                result[day_id] = {
+                    "id": day_id,
+                    "day_name": day_name,
                     "exercises": [],
                 }
-            
+
             if day["exercise_id"] is not None:
-                result[day_name]["exercises"].append({
-                    "id": day["exercise_id"],
-                    "name": day["exercise_name"],
-                    "sets": day["sets"],
-                    "reps": day["reps"],
-                    "rest_time": day["rest_time"],
-                    "note": day["note"],
-                }) 
-        
+                result[day_id]["exercises"].append(
+                    {
+                        "id": day["exercise_id"],
+                        "name": day["exercise_name"],
+                        "sets": day["sets"],
+                        "reps": day["reps"],
+                        "rest_time": day["rest_time"],
+                        "note": day["note"],
+                    }
+                )
+
         return list(result.values())
 
-        
 
 def delete_exercise(exercise_id:int):
     db = sq.connect("database/main/pulse.db")
@@ -141,3 +148,23 @@ def delete_exercise(exercise_id:int):
         return cursor
     finally:
         db.close()
+
+def inspect_tables():
+        db = sq.connect("database/main/pulse.db")
+        exercise_columns = db.execute(
+            "PRAGMA table_info(exercisedetails)"
+        ).fetchall()
+
+        catalog_columns = db.execute(
+            "PRAGMA table_info(catalog)"
+        ).fetchall()
+
+        print("EXERCISEDETAILS COLUMNS:")
+        for column in exercise_columns:
+            print(column)
+
+        print("CATALOG COLUMNS:")
+        for column in catalog_columns:
+            print(column)
+
+inspect_tables()
