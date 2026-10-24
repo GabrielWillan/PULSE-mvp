@@ -32,3 +32,38 @@ def show_workouts():
     return result
 
 
+
+def add_workout(day_id:int):
+   with sq.connect("../database/main/pulse.db") as db:
+    routine_days = db.execute(
+        """
+        SELECT id 
+        FROM routinedays
+        WHERE id = ?
+        """,
+        (day_id,)
+    ).fetchone()
+
+    if routine_days is None:
+        raise KeyError("placeholder")
+    
+    exercises = db.execute(
+       """
+       SELECT
+            ed.id,
+            ed.day_id,
+            ed.exercise_id,
+            c.name,
+            c.target,
+            c.equipment,
+            ed.sets,
+            ed.reps,
+            ed.rest_time,
+            ed.note
+            FROM exercisedetails AS ed
+            JOIN catalog AS c
+            ON ed.exercise_id = c.id
+            WHERE ed.day_id = ?
+       """,
+       (day_id,)
+    )

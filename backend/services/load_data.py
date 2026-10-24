@@ -37,5 +37,8 @@ def show_database():
     db.close()
     return results
 
+
 load_dataset()
 print(show_database()) 
+
+
