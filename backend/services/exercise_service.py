@@ -42,7 +42,7 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
         WHERE id = ?
         """,
         (day_id,)
-    ).fetchone()
+    )
 
     if routine_days is None:
         raise KeyError("placeholder")
@@ -54,9 +54,19 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
        WHERE id = ?
        """,
        (exercise_id, )
-    ).fetchone()
+    )
 
     if exercise is None:
        raise KeyError("placeholder fix custom error")
     
-    
+
+    db.execute(
+       """
+       INSERT INTO exercisedetails(day_id, exercise_id, sets, reps, rest_time, note )
+       VALUES(?, ?, ?, ?, ?, ?)
+       """,
+       (routine_days, exercise, sets, reps, rest_time, note)
+    )
+    db.commit()
+
+
