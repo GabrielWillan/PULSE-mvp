@@ -29,8 +29,11 @@ app.add_middleware(
 class RoutineCreateValidator(BaseModel):
     title_name:str
 
-class FetchRoutineiD(BaseModel):
+class RoutineidValidator(BaseModel):
    routine_id:int
+
+class ExerciseidValidator(BaseModel):
+   exercise_id:int
 
 @app.post("/createroutine", status_code= status.HTTP_201_CREATED)
 def create_routinebase(validator:RoutineCreateValidator):
@@ -48,7 +51,7 @@ def fetchall_routine():
 
 
 @app.delete("/deleteroutine", status_code=status.HTTP_200_OK)
-def deleted_routine(routines:FetchRoutineiD):
+def deleted_routine(routines:RoutineidValidator):
    try:
       delete_routines(routines.routine_id)
    except RoutineIDNotFoundError:
@@ -57,7 +60,7 @@ def deleted_routine(routines:FetchRoutineiD):
 
 
 @app.get("/fetchroutinedays", status_code=status.HTTP_200_OK)
-def fetch_routine_days(routine_days:FetchRoutineiD):
+def fetch_routine_days(routine_days:RoutineidValidator):
    try:
     days_data = fetch_days(routine_days.routine_id)
    except RoutineIDNotFoundError:

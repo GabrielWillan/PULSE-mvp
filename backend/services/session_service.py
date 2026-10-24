@@ -124,3 +124,20 @@ def fetch_days(routine_id:int):
         return list(result.values())
 
         
+
+def delete_exercise(exercise_id:int):
+    db = sq.connect("database/main/pulse.db")
+    
+    try:
+        cursor = db.execute(
+            """
+            SELECT id 
+            FROM exercisedetails
+            WHERE id = ?
+            """,
+            (exercise_id,)
+        )
+        db.commit()
+        return cursor
+    finally:
+        db.close()

@@ -1,8 +1,9 @@
 
 import "./DashBoard.css";
+
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getAllRoutines } from "../api_components";
+import { getAllRoutines, getAllDays } from "../api_components";
 
 const ActivityIcon = () => (
   <svg
@@ -159,69 +160,6 @@ const weekdays = [
   "Day 7",
 ];
 
-// Temporary training data.
-// This is still placeholder data until workouts are loaded
-// from the selected routine's actual training days.
-const weeklyTraining = [
-  {
-    day: "Day 1",
-    title: "Upper body strength",
-    description: "Chest, shoulders and back",
-    duration: 45,
-    completed: false,
-  },
-  {
-    day: "Day 2",
-    title: "Lower body strength",
-    description: "Quads, hamstrings and calves",
-    duration: 50,
-    completed: false,
-  },
-  {
-    day: "Day 3",
-    title: "Rest day",
-    description: "Recovery and mobility",
-    duration: 0,
-    completed: false,
-  },
-  {
-    day: "Day 4",
-    title: "Push day",
-    description: "Chest, shoulders and triceps",
-    duration: 50,
-    completed: false,
-  },
-  {
-    day: "Day 5",
-    title: "Pull day",
-    description: "Back and biceps",
-    duration: 45,
-    completed: false,
-  },
-  {
-    day: "Day 6",
-    title: "Leg day",
-    description: "Quads, hamstrings and calves",
-    duration: 55,
-    completed: false,
-  },
-  {
-    day: "Day 7",
-    title: "Rest day",
-    description: "Recovery and preparation",
-    duration: 0,
-    completed: false,
-  },
-];
-
-const lastSessionData = {
-  title: "Lower body strength",
-  day: "Friday · Day 5",
-  exercises: 7,
-  duration: 52,
-  sets: 36,
-};
-
 export function DashBoard() {
   const location = useLocation();
   const clickedRoutine = location.state?.routine;
@@ -243,6 +181,11 @@ export function DashBoard() {
   const [routinesLoading, setRoutinesLoading] = useState(true);
   const [routinesError, setRoutinesError] = useState("");
 
+  // Routine days loaded from the API.
+  const [routineDays, setRoutineDays] = useState([]);
+  const [daysLoading, setDaysLoading] = useState(false);
+  const [daysError, setDaysError] = useState("");
+
   useEffect(() => {
     let isMounted = true;
 
@@ -258,8 +201,7 @@ export function DashBoard() {
         setRoutines(data);
 
         // Prefer the routine clicked in the menu.
-        // If it is unavailable, retain the current selection
-        // when possible, otherwise select the first routine.
+        // Otherwise retain the current selection or select the first routine.
         setSelectedRoutineId((currentId) => {
           const preferredId = clickedRoutine?.id ?? currentId;
 
@@ -296,14 +238,104 @@ export function DashBoard() {
       (routine) => routine.id === selectedRoutineId
     ) ?? null;
 
+  // Fetch real days whenever the selected routine changes.
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchDays() {
+      if (!selectedRoutineId) {
+        setRoutineDays([]);
+        setDaysLoading(false);
+        setDaysError("");
+        return;
+      }
+
+      try {
+        setDaysLoading(true);
+        setDaysError("");
+        setRoutineDays([]);
+
+        const data = await getAllDays(selectedRoutineId);
+
+        if (!isMounted) return;
+
+        // Supports either an array or an object containing a days array.
+        const days = Array.isArray(data)
+          ? data
+          : data.days ?? data.day_names ?? [];
+
+        setRoutineDays(days);
+      } catch (error) {
+        if (isMounted) {
+          setDaysError(
+            error.message || "Could not load routine days."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setDaysLoading(false);
+        }
+      }
+    }
+
+    fetchDays();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedRoutineId]);
+
+  // Match the seven calendar labels to the real API day names.
+  const weeklyTraining = weekdays.map((day, index) => {
+    const apiDay = routineDays.find((item) => {
+      const name = String(
+        item.day_name ?? item.name ?? ""
+      ).replace(/\s/g, "").toLowerCase();
+
+      return (
+        name === `day${index + 1}` ||
+        name === `day${index + 1}`.toLowerCase()
+      );
+    });
+
+    const exercises = apiDay?.exercises ?? [];
+    const isRestDay = apiDay?.is_rest_day === true;
+
+    let title = "Add session";
+    let description = "No workout assigned yet.";
+
+    if (isRestDay) {
+      title = "Rest day";
+      description = "Recovery and preparation.";
+    } else if (exercises.length > 0) {
+      title = exercises[0].exercise_name ??
+        exercises[0].name ??
+        "Workout";
+
+      description =
+        exercises.length === 1
+          ? "1 exercise assigned"
+          : `${exercises.length} exercises assigned`;
+    }
+
+    return {
+      id: apiDay?.day_id ?? apiDay?.id ?? null,
+      day,
+      title,
+      description,
+      exercises,
+      isRestDay,
+      hasWorkout: exercises.length > 0,
+      completed: false,
+    };
+  });
+
   const selectedSession =
     weeklyTraining.find((day) => day.day === selectedDay) ??
     weeklyTraining[0];
 
-  const completedSessions = weeklyTraining.filter(
-    (day) => day.completed
-  ).length;
-
+  // Completion requires session-history data, which is not loaded here.
+  const completedSessions = 0;
   const weeklyGoal = 5;
 
   const weeklyProgress = Math.min(
@@ -426,17 +458,49 @@ export function DashBoard() {
                 </div>
 
                 <h2 className="session-card-title">
-                  {selectedSession.title}
+                  {daysLoading
+                    ? "Loading routine day..."
+                    : selectedSession.title}
                 </h2>
 
                 <p className="session-card-description">
-                  {selectedSession.description}
-                  {selectedSession.duration > 0 &&
-                    ` · ${selectedSession.duration} min`}
+                  {routinesLoading
+                    ? "Loading routines..."
+                    : routinesError
+                    ? routinesError
+                    : daysError
+                    ? daysError
+                    : !selectedRoutine
+                    ? "Create or select a routine to get started."
+                    : selectedSession.description}
                 </p>
 
+                {selectedSession.exercises.length > 0 && (
+                  <ul className="session-card-description">
+                    {selectedSession.exercises.map((exercise, index) => (
+                      <li
+                        key={
+                          exercise.exercise_id ??
+                          exercise.id ??
+                          `${selectedSession.id}-${index}`
+                        }
+                      >
+                        {exercise.exercise_name ?? exercise.name}
+                        {exercise.sets != null &&
+                          ` · ${exercise.sets} sets`}
+                        {exercise.reps != null &&
+                          ` × ${exercise.reps} reps`}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 <div className="current-session-footer">
-                  {selectedSession.duration > 0 ? (
+                  {selectedSession.isRestDay ? (
+                    <span className="rest-day-label">
+                      Recovery day
+                    </span>
+                  ) : selectedSession.hasWorkout ? (
                     <button
                       className="dashboard-primary-btn"
                       type="button"
@@ -446,7 +510,7 @@ export function DashBoard() {
                     </button>
                   ) : (
                     <span className="rest-day-label">
-                      Recovery day
+                      Add session
                     </span>
                   )}
                 </div>
@@ -456,19 +520,16 @@ export function DashBoard() {
                 <div className="section-card-heading">
                   <h2>Last session</h2>
                   <span className="last-session-day">
-                    {lastSessionData.day}
+                    No session history
                   </span>
                 </div>
 
                 <div className="last-session-content">
-                  <h3>{lastSessionData.title}</h3>
+                  <h3>No completed workouts yet</h3>
 
                   <p>
-                    {lastSessionData.exercises} exercises
-                    <span className="metadata-separator">·</span>
-                    {lastSessionData.duration} minutes
-                    <span className="metadata-separator">·</span>
-                    {lastSessionData.sets} sets
+                    Session history will appear here when
+                    connected to the sessions API.
                   </p>
                 </div>
               </article>
@@ -525,11 +586,7 @@ export function DashBoard() {
                 </div>
 
                 <p className="weekly-progress-caption">
-                  {completedSessions >= weeklyGoal
-                    ? "Weekly goal reached. Great work!"
-                    : `${
-                        weeklyGoal - completedSessions
-                      } more to reach your goal.`}
+                  Session history will determine your weekly progress.
                 </p>
               </article>
             </div>
