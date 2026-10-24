@@ -33,7 +33,7 @@ def show_workouts():
 
 
 
-def add_workout(day_id:int):
+def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, note:str | None = None):
    with sq.connect("../database/main/pulse.db") as db:
     routine_days = db.execute(
         """
@@ -47,23 +47,16 @@ def add_workout(day_id:int):
     if routine_days is None:
         raise KeyError("placeholder")
     
-    exercises = db.execute(
+    exercise = db.execute(
        """
-       SELECT
-            ed.id,
-            ed.day_id,
-            ed.exercise_id,
-            c.name,
-            c.target,
-            c.equipment,
-            ed.sets,
-            ed.reps,
-            ed.rest_time,
-            ed.note
-            FROM exercisedetails AS ed
-            JOIN catalog AS c
-            ON ed.exercise_id = c.id
-            WHERE ed.day_id = ?
+       SELECT id
+       FROM catalog
+       WHERE id = ?
        """,
-       (day_id,)
-    )
+       (exercise_id, )
+    ).fetchone()
+
+    if exercise is None:
+       raise KeyError("placeholder fix custom error")
+    
+    
