@@ -36,6 +36,14 @@ class RoutineidValidator(BaseModel):
 class ExerciseidValidator(BaseModel):
    exercise_id:int
 
+class WorkoutAddValidator(BaseModel):
+   day_id:int
+   exercise_id:int
+   sets:int
+   reps:int
+   rest_time:int
+   note: str | None = None
+
 @app.post("/createroutine", status_code= status.HTTP_201_CREATED)
 def create_routinebase(validator:RoutineCreateValidator):
     routine_id = CreateRoutine(validator.title_name)._createroutine
@@ -71,11 +79,27 @@ def fetch_routine_days(routine_days:RoutineidValidator):
 
 
 @app.post("/addworkout", status_code= status.HTTP_200_OK)
-def added_workouts():
-   pass
+def added_workouts(workouts: WorkoutAddValidator):
+
+   new_workout =add_workout(
+      day_id = workouts.day_id, 
+      exercise_id = workouts.exercise_id,
+      sets = workouts.sets,
+      reps = workouts.reps,
+      rest_time = workouts.rest_time,
+      note = workouts.note
+   )
+
+   return new_workout
+
 
 
 
 @app.get("/showworkout", status_code= status.HTTP_200_OK)
 def showing_workouts():
-   pass
+   try:
+      get_workout = show_workouts()
+   except KeyError:
+      raise KeyError("placeholder")
+   
+   return get_workout

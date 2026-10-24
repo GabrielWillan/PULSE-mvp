@@ -2,7 +2,7 @@ import sqlite3 as sq
 
 
 def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, note:str | None = None):
-   with sq.connect("../database/main/pulse.db") as db:
+    db = sq.connect("database/main/pulse.db")
     routine_days = db.execute(
         """
         SELECT id 
@@ -10,10 +10,11 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
         WHERE id = ?
         """,
         (day_id,)
-    )
+    ).fetchone()
+   
 
     if routine_days is None:
-        raise KeyError("placeholder")
+        raise KeyError("Routine days is not available")
     
     exercise = db.execute(
        """
@@ -22,10 +23,10 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
        WHERE id = ?
        """,
        (exercise_id, )
-    )
+    ).fetchone()
 
     if exercise is None:
-       raise KeyError("placeholder fix custom error")
+       raise KeyError("exercise is not available")
     
 
     db.execute(
@@ -33,16 +34,47 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
        INSERT INTO exercisedetails(day_id, exercise_id, sets, reps, rest_time, note )
        VALUES(?, ?, ?, ?, ?, ?)
        """,
-       (routine_days, exercise, sets, reps, rest_time, note)
-    ).fetchone()
+       (routine_days[0], exercise[0], sets, reps, rest_time, note, )
+    )
     db.commit()
+    db.close()
 
 
 def show_workouts():
-    db= sq.connect("../database/main/pulse.db")
+    db= sq.connect("database/main/pulse.db")
     cursor = db.execute(
-        """SELECT name, sets, reps, rest_time FROM exercisedetails;"""
+        """SELECT 
+        c.name, 
+        ed.sets, 
+        ed.reps, 
+        ed.rest_time 
+        FROM exercisedetails AS ed
+        JOIN catalog as c
+        ON ed.exercise_id = c.id;"""
     )
     result = cursor.fetchall()
-    db.close()
+    db.commit()
     return result
+
+
+
+def search_workouts(exercise_name:str):
+    db = sq.connect("database/main/pulse.db")
+
+    search_param = f"%{exercise_name}%"
+    try:
+        search_result = db.execute(
+            """
+            SELECT name
+            FROM catalog
+            WHERE lower(name) LIKE?
+            LIMIT 20;
+            """,
+            (search_param,)
+        ).fetchall()
+        return [row[0] for row in search_result ] 
+    finally:
+        db.close()
+    
+
+
