@@ -4,6 +4,7 @@ from api.customerror import RoutineIDNotFoundError
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field  # noqa: F401
+from services.exercise_service import add_workout, show_workouts
 from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
@@ -68,3 +69,13 @@ def fetch_routine_days(routine_days:RoutineidValidator):
    
    return days_data
 
+
+@app.post("/addworkout", status_code= status.HTTP_200_OK)
+def added_workouts():
+   pass
+
+
+
+@app.get("/showworkout", status_code= status.HTTP_200_OK)
+def showing_workouts():
+   pass
