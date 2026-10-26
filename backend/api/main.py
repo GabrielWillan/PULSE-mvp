@@ -1,9 +1,11 @@
-import sqlite3 as sq  # noqa: F401
-
 from api.customerror import RoutineIDNotFoundError
+from custom_validators import (
+    RoutineCreateValidator,
+    RoutineidValidator,
+    WorkoutAddValidator,
+)
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field  # noqa: F401
 from services.exercise_service import add_workout, search_workouts, show_workouts
 from services.routine_service import (
     CreateRoutine,
@@ -26,26 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#routine createvalidator
-class RoutineCreateValidator(BaseModel):
-    title_name:str
-
-class RoutineidValidator(BaseModel):
-   routine_id:int
-
-class ExerciseidValidator(BaseModel):
-   exercise_id:int
-
-class ExerciseNameValidator(BaseModel):
-   exercise_name:str
-
-class WorkoutAddValidator(BaseModel):
-   day_id:int
-   exercise_id:int
-   sets:int
-   reps:int
-   rest_time:int
-   note: str | None = None
 
 @app.post("/createroutine", status_code= status.HTTP_201_CREATED)
 def create_routinebase(validator:RoutineCreateValidator):
@@ -95,14 +77,13 @@ def added_workouts(workouts: WorkoutAddValidator):
    return new_workout
 
 @app.get("/showworkout", status_code= status.HTTP_200_OK)
-def showing_workouts():
+def showing_workouts(routine_id:int):
    try:
-      get_workout = show_workouts()
+      get_workout = show_workouts(routine_id)
    except KeyError:
-      raise KeyError("placeholder")
+      raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail= "This routine dose not exist")
    
    return get_workout
-
 
 @app.get("/searchworkout")
 def searched_exercises(exercise_name: str):

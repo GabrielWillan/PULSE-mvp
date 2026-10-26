@@ -1,5 +1,11 @@
 import sqlite3 as sq
 
+from api.customerror import (
+    DayIDNotFoundError,
+    ExerciseIDNotFoundError,
+    RoutineIDNotFoundError,
+)
+
 
 def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, note:str | None = None):
     db = sq.connect("database/main/pulse.db")
@@ -14,7 +20,7 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
    
 
     if routine_days is None:
-        raise KeyError("Routine days is not available")
+        raise DayIDNotFoundError(f"Day id: {day_id}  is not available")
     
     exercise = db.execute(
        """
@@ -40,22 +46,44 @@ def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, 
     db.close()
 
 
-def show_workouts():
+def show_workouts(routine_id:int):
     db= sq.connect("database/main/pulse.db")
+
+    routine = db.execute(
+        """
+        SELECT id 
+        FROM routinebase
+        WHERE id = ?
+        """,
+        (routine_id, )
+    ).fetchone()
+
+    if routine is None:
+        raise RoutineIDNotFoundError(f"Routine id: {routine_id} dose not exist")
+
+
     cursor = db.execute(
-        """SELECT 
+        """
+        SELECT
+        rd.routine_id,
+        rd.id,
+        ed.day_id,
         c.name, 
         ed.sets, 
         ed.reps, 
         ed.rest_time 
         FROM exercisedetails AS ed
         JOIN catalog as c
-        ON ed.exercise_id = c.id;"""
+        ON ed.exercise_id = c.id
+        JOIN routinedays as rd
+        ON ed.day_id = rd.id
+        WHERE rd.routine_id = ?;
+        """,
+        (routine_id, )
     )
     result = cursor.fetchall()
     db.commit()
     return result
-
 
 
 def search_workouts(exercise_name: str):
@@ -81,3 +109,33 @@ def search_workouts(exercise_name: str):
 
     finally:
         db.close()
+
+
+def edit_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, note:str | None = None):
+    db = sq.connect("database/main/pulse.db")
+
+    day = db.execute(
+        """
+        SELECT id 
+        FROM routinedays
+        WHERE id = ?
+        """,
+        (day_id, )
+    ).fetchone()
+
+
+    if day is None:
+        raise RoutineIDNotFoundError(f"day id: {day_id} dose not exist")
+    
+    exercise = db.execute(
+        """
+        SELECT id
+        FROM  catalog
+        WHERE id = ?
+        """,
+        (exercise_id, )
+    ).fetchone()
+
+    if exercise is None:
+        raise ExerciseIDNotFoundError(f"Exercise id: {exercise_id} dose not exist")
+    
