@@ -12,6 +12,7 @@ class CreateRoutine:
         
         
         with sq.connect(db_path) as db:
+            db.execute("PRAGMA foreign_keys = ON")
             
             cursor = db.execute(
                 """
@@ -30,6 +31,7 @@ class CreateRoutine:
     def create_routine_days(self, routine_id: int, db_path = "database/main/pulse.db"):
         days_id = []
         with sq.connect(db_path) as db:
+            db.execute("PRAGMA foreign_keys = ON")
             for day in DAY_NAMES:
                 cursor = db.execute(
                     """
@@ -50,6 +52,7 @@ class FetchRoutine:
 
     def fetch_routine(self, routine_id: int,db_path = "database/main/pulse.db"):
         with sq.connect(db_path) as db:
+            db.execute("PRAGMA foreign_keys = ON")
             routine_result = db.execute(
                 """
                 SELECT id, name FROM routinebase
@@ -65,6 +68,7 @@ class FetchRoutine:
 
     def fetch_routine_days(self, routine_id: int, db_path = "database/main/pulse.db"):
         with sq.connect(db_path) as db:
+            db.execute("PRAGMA foreign_keys = ON")
             days = db.execute(
                 """
                 SELECT id, routine_id, day_name FROM routinedays
@@ -78,6 +82,7 @@ class FetchRoutine:
 
 def fetch_all_routines(db_path="database/main/pulse.db"):
     with sq.connect(db_path) as db:
+        db.execute("PRAGMA foreign_keys = ON")
         routines = db.execute(
             """
             SELECT id, name 
@@ -92,6 +97,8 @@ def fetch_all_routines(db_path="database/main/pulse.db"):
 
 def delete_routines(routine_id: int):
     db = sq.connect("database/main/pulse.db")
+    db.execute("PRAGMA foreign_keys = ON")
+    print(db.execute("PRAGMA foreign_keys").fetchone())
     try:
         db.execute(
             """
