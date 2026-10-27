@@ -139,3 +139,13 @@ def edit_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int,
     if exercise is None:
         raise ExerciseIDNotFoundError(f"Exercise id: {exercise_id} dose not exist")
     
+    db.execute(
+        """
+        UPDATE exercisedetails SET sets = ?, reps = ?, rest_time = ?, note = ?
+        WHERE day_id = ? AND exercise_id = ?;
+        """,
+        (sets, reps, rest_time, note, day[0], exercise[0]),
+    )
+    db.commit()
+    db.close()
+    

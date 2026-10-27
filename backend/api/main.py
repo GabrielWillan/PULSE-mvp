@@ -1,12 +1,17 @@
-from api.customerror import RoutineIDNotFoundError
-from custom_validators import (
+from api.custom_validators import (
     RoutineCreateValidator,
     RoutineidValidator,
     WorkoutAddValidator,
 )
+from api.customerror import RoutineIDNotFoundError
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from services.exercise_service import add_workout, search_workouts, show_workouts
+from services.exercise_service import (
+    add_workout,
+    edit_workout,
+    search_workouts,
+    show_workouts,
+)
 from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
@@ -84,6 +89,20 @@ def showing_workouts(routine_id:int):
       raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail= "This routine dose not exist")
    
    return get_workout
+
+@app.patch("/editworkout", status_code= status.HTTP_202_ACCEPTED)
+def edited_workout(workouts:WorkoutAddValidator):
+   new_workout = edit_workout(
+      day_id = workouts.day_id,
+      exercise_id = workouts.exercise_id,
+      sets = workouts.sets,
+      reps = workouts.reps,
+      rest_time = workouts.rest_time,
+      note = workouts.note
+   )
+
+   return new_workout
+
 
 @app.get("/searchworkout")
 def searched_exercises(exercise_name: str):
