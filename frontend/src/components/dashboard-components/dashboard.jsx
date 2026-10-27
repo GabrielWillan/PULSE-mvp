@@ -1,11 +1,13 @@
-
 import "./DashBoard.css";
 import "./AddWorkoutModal.css";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAllRoutines, getAllDays } from "../api_components";
 import { AddWorkout, ShowWorkout, SearchWorkout } from "../api_components";
+
+// Route of the routine menu screen (used by "Go back to menu").
+const MENU_ROUTE = "/";
 
 const ActivityIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -184,6 +186,33 @@ export function DashBoard() {
   const weekNumber = getWeekNumber(today);
 
   const [selectedDay, setSelectedDay] = useState("Day 1");
+
+  // Header menu dropdown
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close the dropdown on outside click or Escape.
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+
+    function handlePointerDown(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const [selectedRoutineId, setSelectedRoutineId] = useState(
     clickedRoutine?.id ?? null
@@ -514,8 +543,6 @@ export function DashBoard() {
     const exercises = apiDay?.exercises ?? [];
     const isRestDay = apiDay?.is_rest_day === true;
 
-    // The API currently supplies exercises, not a separate workout title.
-    // Until a title field is provided, display the first actual exercise.
     let title = "Add session";
     let description = "No workout assigned yet.";
 
@@ -564,13 +591,57 @@ export function DashBoard() {
       <div className="dashboard-inner">
         <header className="dashboard-hdr">
           <div className="dashboard-left">
-            <button
-              className="dashboard-menu-btn"
-              type="button"
-              aria-label="Open menu"
-            >
-              <MenuIcon />
-            </button>
+            <div className="dashboard-menu" ref={menuRef}>
+              <button
+                className="dashboard-menu-btn"
+                type="button"
+                aria-label="Open menu"
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+                onClick={() => setIsMenuOpen((open) => !open)}
+              >
+                <MenuIcon />
+              </button>
+
+              {isMenuOpen && (
+                <div className="dashboard-menu-dropdown" role="menu">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dashboard-menu-item"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Food
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dashboard-menu-item"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Training log
+                  </button>
+
+                  <div
+                    className="dashboard-menu-divider"
+                    role="separator"
+                  />
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dashboard-menu-item"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      navigate(MENU_ROUTE);
+                    }}
+                  >
+                    Go back to menu
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className="dashboard-brand">
               <div className="dashboard-logo">
@@ -712,7 +783,8 @@ export function DashBoard() {
 
                       <button
                         className="dashboard-primary-btn"
-                        type="button">
+                        type="button"
+                      >
                         <ActivityIcon />
                         Start session
                       </button>
@@ -910,8 +982,6 @@ export function DashBoard() {
                           className="pulse-editor-save"
                           type="button"
                           onClick={() => {
-                            // No update endpoint exists yet, so don't
-                            // falsely report that existing edits were saved.
                             closeWorkoutModal();
                           }}
                         >
