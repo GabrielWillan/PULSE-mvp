@@ -66,7 +66,7 @@ class FetchRoutine:
         return {"routine_id": routine_result, "day_names": days_result}
         
 
-    def fetch_routine_days(self, routine_id: int, db_path = "database/main/pulse.db"):
+    def fetch_routine_days(self, routine_id: int,db_path = "database/main/pulse.db"):
         with sq.connect(db_path) as db:
             db.execute("PRAGMA foreign_keys = ON")
             days = db.execute(

@@ -7,6 +7,30 @@ from api.customerror import (
 )
 
 
+def update_workout_title(day_id:int, workout_title:str | None = None):
+    db = sq.connect("database/main/pulse.db")
+    routine_days = db.execute(
+        """
+        SELECT id 
+        FROM routinedays
+        WHERE id = ?
+        """,
+        (day_id, )
+    )
+
+    if routine_days is None:
+        raise DayIDNotFoundError(f"Day id: {day_id}  is not available")
+    
+    db.execute(
+        """
+        UPDATE routinedays
+        SET workout_title = ?
+        WHERE id = ?
+        """,
+        (workout_title, day_id),
+    )
+
+
 def add_workout(day_id:int, exercise_id:int, sets:int, reps:int, rest_time:int, note:str | None = None):
     db = sq.connect("database/main/pulse.db")
     routine_days = db.execute(

@@ -83,12 +83,15 @@
   backdrop-filter: blur(9px);
 }
 
-/* Main workout editor */
+/* Main workout editor: same width as the add-exercise modal, never scrolls itself */
 .pulse-workout-editor {
   position: relative;
-  width: min(100%, 1100px);
-  max-height: calc(100dvh - 48px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(100%, 540px);
+  max-height: min(88vh, 640px);
+  overflow: hidden;
   padding: 30px;
   color: #f4f7ff;
   background: #0b1b35;
@@ -97,79 +100,90 @@
   box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
 }
 
+/* Everything keeps its size; only the exercise list (below) shrinks and scrolls */
+.pulse-workout-editor > * {
+  flex: none;
+}
+
 .pulse-editor-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 28px;
-  margin-bottom: 28px;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 0;
   border-bottom: 1px solid rgba(130, 170, 224, 0.3);
 }
 
 .pulse-editor-eyebrow {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   color: #70aaff;
-  font-size: 0.95rem;
+  font-size: 0.75rem;
   font-weight: 750;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .pulse-editor-header h2 {
   margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  line-height: 1.15;
+  font-size: 1.35rem;
+  line-height: 1.2;
 }
 
 .pulse-editor-header p {
-  margin: 14px 0 0;
+  margin: 6px 0 0;
   color: #9eb5d6;
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 .pulse-editor-header .pulse-modal-close {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 58px;
-  height: 58px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   color: #f4f7ff;
   background: #142c4d;
   border: 0;
-  border-radius: 20px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
 /* Exercise cards */
 .pulse-editor-exercise-list {
   display: grid;
-  gap: 18px;
+  align-content: start;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .pulse-editor-exercise {
-  padding: 20px;
+  padding: 14px;
   background: #102544;
   border: 1px solid #29476f;
-  border-radius: 24px;
+  border-radius: 16px;
 }
 
 .pulse-editor-exercise-main {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .pulse-editor-exercise-number {
   display: grid;
-  flex: 0 0 58px;
+  flex: 0 0 36px;
   place-items: center;
-  width: 58px;
-  height: 58px;
+  width: 36px;
+  height: 36px;
   color: #8dbbff;
   background: #1d3c67;
-  border-radius: 18px;
-  font-size: 1.65rem;
+  border-radius: 11px;
+  font-size: 1.05rem;
   font-weight: 750;
 }
 
@@ -181,15 +195,15 @@
 .pulse-editor-exercise-info h3 {
   margin: 0;
   color: #f4f7ff;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .pulse-editor-exercise-info p {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   color: #9eb5d6;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .pulse-editor-grip {
@@ -204,12 +218,13 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  margin-top: 22px;
+  margin-top: 12px;
   padding: 0;
   color: #87b8ff;
   background: transparent;
   border: 0;
   font: inherit;
+  font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
 }
@@ -222,9 +237,9 @@
 .pulse-editor-settings {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 20px;
-  padding-top: 18px;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid rgba(130, 170, 224, 0.2);
 }
 
@@ -272,16 +287,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
-  min-height: 72px;
-  margin-top: 26px;
-  padding: 16px;
+  min-height: 48px;
+  margin-top: 0;
+  padding: 10px 16px;
   color: #f4f7ff;
   background: transparent;
   border: 1px solid #426b9e;
-  border-radius: 20px;
+  border-radius: 14px;
   font: inherit;
+  font-size: 0.95rem;
   font-weight: 650;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
@@ -299,19 +315,23 @@
 .pulse-editor-help {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin: 26px 0;
+  gap: 8px;
+  margin: 0;
   color: #9eb5d6;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .pulse-editor-success {
+  margin: 0;
   color: #86efac;
+  font-size: 0.9rem;
 }
 
 .pulse-editor-error {
+  margin: 0;
   color: #fca5a5;
+  font-size: 0.9rem;
 }
 
 .pulse-editor-save {
@@ -319,12 +339,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 70px;
-  padding: 16px;
+  min-height: 48px;
+  padding: 12px 16px;
   color: white;
   background: #347df0;
   border: 0;
-  border-radius: 20px;
+  border-radius: 14px;
   font: inherit;
   font-weight: 750;
   cursor: pointer;
@@ -477,19 +497,19 @@
 
   .pulse-editor-header {
     gap: 12px;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
+    padding-bottom: 12px;
+    margin-bottom: 0;
   }
 
   .pulse-editor-header .pulse-modal-close {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
   }
 
   .pulse-editor-exercise {
-    padding: 14px;
-    border-radius: 18px;
+    padding: 12px;
+    border-radius: 14px;
   }
 
   .pulse-editor-exercise-main {
@@ -497,19 +517,19 @@
   }
 
   .pulse-editor-exercise-number {
-    flex-basis: 44px;
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
-    border-radius: 14px;
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    border-radius: 11px;
   }
 
   .pulse-editor-exercise-info h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .pulse-editor-exercise-info p {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .pulse-editor-settings,
@@ -526,6 +546,3 @@
     padding: 12px;
   }
 }
-
-
-
