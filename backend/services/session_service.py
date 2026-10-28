@@ -149,22 +149,3 @@ def delete_exercise(exercise_id:int):
     finally:
         db.close()
 
-def inspect_tables():
-        db = sq.connect("database/main/pulse.db")
-        exercise_columns = db.execute(
-            "PRAGMA table_info(exercisedetails)"
-        ).fetchall()
-
-        catalog_columns = db.execute(
-            "PRAGMA table_info(catalog)"
-        ).fetchall()
-
-        print("EXERCISEDETAILS COLUMNS:")
-        for column in exercise_columns:
-            print(column)
-
-        print("CATALOG COLUMNS:")
-        for column in catalog_columns:
-            print(column)
-
-inspect_tables()
