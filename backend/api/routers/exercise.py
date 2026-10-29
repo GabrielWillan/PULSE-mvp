@@ -1,5 +1,6 @@
 from api.custom_validators import (
    WorkoutAddValidator,
+   WorkoutEditValidator,
    WorkoutTitleValidator,
 )
 from fastapi import APIRouter, HTTPException, status
@@ -38,9 +39,10 @@ def showing_workouts(routine_id:int):
    return get_workout
 
 @router.patch("/editworkout", status_code= status.HTTP_202_ACCEPTED)
-def edited_workout(workouts:WorkoutAddValidator):
+def edited_workout(workouts:WorkoutEditValidator):
    new_workout = edit_workout(
       day_id = workouts.day_id,
+      exercise_detail_id= workouts.exercise_detail_id,
       exercise_id = workouts.exercise_id,
       sets = workouts.sets,
       reps = workouts.reps,

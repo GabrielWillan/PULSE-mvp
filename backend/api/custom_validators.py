@@ -15,6 +15,16 @@ class WorkoutAddValidator(BaseModel):
    rest_time:int
    note: str | None = None
 
+
+class WorkoutEditValidator(BaseModel):
+   day_id:int
+   exercise_detail_id:int
+   exercise_id:int
+   sets:int
+   reps:int
+   rest_time:int
+   note: str | None = None
+
 class WorkoutTitleValidator(BaseModel):
    day_id:int
    workout_title:str | None = None
