@@ -37,6 +37,7 @@ export async function getAllDays(routine_id) {
   );
 
   const Data = await response.json();
+  
 
   if (!response.ok) {
     throw new Error(
@@ -105,4 +106,23 @@ export async function SearchWorkout(exercise_name) {
   }
 
   return Data;
+}
+
+
+
+export async function  UpdateWorkoutTitle(day_id, workout_title) {
+  const Response = await fetch (`http://localhost:8000/days/${day_id}/title`, {
+    method:"PATCH",
+    headers:{
+      "Content-Type" : "application/json",
+    },
+    body: JSON.stringify({day_id, workout_title,})
+  });
+
+  const Data = await Response.json()
+  if(!Response.ok){
+    throw new Error(Data.detail ?? "Unable to ")
+  } 
+
+  return Data
 }

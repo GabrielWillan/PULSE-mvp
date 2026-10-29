@@ -86,6 +86,7 @@ def fetch_days(routine_id: int):
             SELECT
                 rd.id AS day_id,
                 rd.day_name,
+                rd.workout_title,
                 ed.id AS exercise_detail_id,
                 ed.exercise_id,
                 c.name AS exercise_name,
@@ -109,11 +110,13 @@ def fetch_days(routine_id: int):
         for day in days:
             day_id = day["day_id"]
             day_name = day["day_name"]
+            workout_title = day["workout_title"]
 
             if day_id not in result:
                 result[day_id] = {
                     "id": day_id,
                     "day_name": day_name,
+                    "workout_title":workout_title,
                     "exercises": [],
                 }
 

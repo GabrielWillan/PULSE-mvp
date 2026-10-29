@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field  # noqa: F401
+from pydantic import BaseModel
 
 
 class RoutineCreateValidator(BaseModel):
@@ -14,3 +14,7 @@ class WorkoutAddValidator(BaseModel):
    reps:int
    rest_time:int
    note: str | None = None
+
+class WorkoutTitleValidator(BaseModel):
+   day_id:int
+   workout_title:str | None = None

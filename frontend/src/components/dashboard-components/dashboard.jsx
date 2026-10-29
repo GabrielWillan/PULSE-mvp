@@ -1,20 +1,16 @@
 import "./DashBoard.css";
 import "./AddWorkoutModal.css";
-
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAllRoutines, getAllDays } from "../api_components";
-import { AddWorkout, ShowWorkout, SearchWorkout } from "../api_components";
-
+import { AddWorkout, ShowWorkout, SearchWorkout,UpdateWorkoutTitle } from "../api_components";
 // Route of the routine menu screen (used by "Go back to menu").
 const MENU_ROUTE = "/";
-
 const ActivityIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M3 12h4l2.5-7 5 14L17 12h4" />
   </svg>
 );
-
 const MenuIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M4 5h16" />
@@ -22,20 +18,17 @@ const MenuIcon = () => (
     <path d="M4 19h16" />
   </svg>
 );
-
 const AddIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M5 12h14" />
     <path d="M12 5v14" />
   </svg>
 );
-
 const CloseIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="m18 6-12 12M6 6l12 12" />
   </svg>
 );
-
 const GripIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     {[5, 12, 19].map((y) =>
@@ -45,7 +38,6 @@ const GripIcon = () => (
     )}
   </svg>
 );
-
 const ChevronIcon = ({ open = false }) => (
   <svg
     width="20"
@@ -62,10 +54,8 @@ const ChevronIcon = ({ open = false }) => (
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
-
 function useToday() {
   const [today, setToday] = useState(() => new Date());
-
   useEffect(() => {
     const now = new Date();
     const nextMidnight = new Date(
@@ -73,30 +63,23 @@ function useToday() {
       now.getMonth(),
       now.getDate() + 1
     );
-
     const id = setTimeout(
       () => setToday(new Date()),
       nextMidnight - now + 1000
     );
-
     return () => clearTimeout(id);
   }, [today]);
-
   return today;
 }
-
 function currentToday(date) {
   const weekday = date.toLocaleDateString("en-GB", {
     weekday: "long",
   });
-
   const dayMonth = date.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
   });
-
   const pad = (n) => String(n).padStart(2, "0");
-
   return {
     label: `${weekday}, ${dayMonth}`,
     iso: `${date.getFullYear()}-${pad(
@@ -104,30 +87,23 @@ function currentToday(date) {
     )}-${pad(date.getDate())}`,
   };
 }
-
 function titleShowCase() {
   const hour = new Date().getHours();
-
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
 }
-
 function getWeekNumber(date) {
   const d = new Date(
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   );
-
   const day = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - day);
-
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-
   return Math.ceil(
     (((d - yearStart) / 86400000) + 1) / 7
   );
 }
-
 const weekdays = [
   "Day 1",
   "Day 2",
@@ -137,20 +113,16 @@ const weekdays = [
   "Day 6",
   "Day 7",
 ];
-
 function getExerciseName(exercise) {
   if (typeof exercise === "string") return exercise;
   if (!exercise || typeof exercise !== "object") return "";
-
   if (typeof exercise.exercise === "string") {
     return exercise.exercise;
   }
-
   if (exercise.exercise && typeof exercise.exercise === "object") {
     const nestedName = getExerciseName(exercise.exercise);
     if (nestedName) return nestedName;
   }
-
   return (
     exercise.Exercise_Name ??
     exercise.exercise_name ??
@@ -162,10 +134,8 @@ function getExerciseName(exercise) {
     ""
   );
 }
-
 function getExerciseId(exercise) {
   if (!exercise || typeof exercise !== "object") return null;
-
   return (
     exercise.id ??
     exercise.exercise_id ??
@@ -174,108 +144,86 @@ function getExerciseId(exercise) {
     null
   );
 }
-
 export function DashBoard() {
   const location = useLocation();
   const navigate = useNavigate();
   const clickedRoutine = location.state?.routine;
-
   const today = useToday();
   const { label, iso } = currentToday(today);
   const titleMessage = titleShowCase();
   const weekNumber = getWeekNumber(today);
-
   const [selectedDay, setSelectedDay] = useState("Day 1");
-
-  // Header menu dropdown
+// Header menu dropdown
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
-
-  // Close the dropdown on outside click or Escape.
+// Close the dropdown on outside click or Escape.
   useEffect(() => {
     if (!isMenuOpen) return undefined;
-
     function handlePointerDown(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     }
-
     function handleKeyDown(event) {
       if (event.key === "Escape") setIsMenuOpen(false);
     }
-
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
-
   const [selectedRoutineId, setSelectedRoutineId] = useState(
     clickedRoutine?.id ?? null
   );
-
   const [routines, setRoutines] = useState([]);
   const [routinesLoading, setRoutinesLoading] = useState(true);
   const [routinesError, setRoutinesError] = useState("");
-
   const [routineDays, setRoutineDays] = useState([]);
   const [daysLoading, setDaysLoading] = useState(false);
   const [daysError, setDaysError] = useState("");
-
   const [workouts, setWorkouts] = useState([]);
   const [workoutsError, setWorkoutsError] = useState("");
   const [workoutsLoading, setWorkoutsLoading] = useState(false);
-
-  // The modal has two modes: the workout editor and adding an exercise.
+// The modal has two modes: the workout editor and adding an exercise.
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
+  const [showDayTitleForm, setShowDayTitleForm] = useState(false);
+  const [workoutTitleInput, setWorkoutTitleInput] = useState("");
+  const [titleSaveLoading, setTitleSaveLoading] = useState(false);
+  const [titleSaveError, setTitleSaveError] = useState("");
   const [modalMode, setModalMode] = useState("add");
   const [showAddExerciseForm, setShowAddExerciseForm] = useState(false);
   const [expandedExerciseIds, setExpandedExerciseIds] = useState([]);
-
   const [exerciseSearch, setExerciseSearch] = useState("");
   const [exerciseResults, setExerciseResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [selectedExercise, setSelectedExercise] = useState(null);
-
   const [sets, setSets] = useState(3);
   const [reps, setReps] = useState(10);
   const [restTime, setRestTime] = useState(90);
   const [workoutNote, setWorkoutNote] = useState("");
-
   const [addWorkoutError, setAddWorkoutError] = useState("");
   const [addWorkoutMessage, setAddWorkoutMessage] = useState("");
   const [addWorkoutLoading, setAddWorkoutLoading] = useState(false);
-
   useEffect(() => {
     let isMounted = true;
-
     async function fetchRoutines() {
       try {
         setRoutinesLoading(true);
         setRoutinesError("");
-
         const data = await getAllRoutines();
-
         if (!isMounted) return;
-
         const list = Array.isArray(data)
           ? data
           : data?.routines ?? [];
-
         setRoutines(list);
-
         setSelectedRoutineId((currentId) => {
           const preferredId = clickedRoutine?.id ?? currentId;
-
           const stillExists = list.some(
             (routine) => routine.id === preferredId
           );
-
           return stillExists ? preferredId : list[0]?.id ?? null;
         });
       } catch (error) {
@@ -288,24 +236,19 @@ export function DashBoard() {
         if (isMounted) setRoutinesLoading(false);
       }
     }
-
     fetchRoutines();
-
     return () => {
       isMounted = false;
     };
   }, [clickedRoutine?.id]);
-
   async function refreshWorkouts() {
     try {
       setWorkoutsLoading(true);
       setWorkoutsError("");
-
       const data = await ShowWorkout();
       const list = Array.isArray(data)
         ? data
         : data?.workouts ?? data?.exercises ?? data?.results ?? [];
-
       setWorkouts(list);
     } catch (error) {
       setWorkoutsError(error.message || "Could not load workouts.");
@@ -313,11 +256,9 @@ export function DashBoard() {
       setWorkoutsLoading(false);
     }
   }
-
   useEffect(() => {
     refreshWorkouts();
   }, []);
-
   useEffect(() => {
     if (!isAddWorkoutOpen || !exerciseSearch.trim()) {
       setExerciseResults([]);
@@ -325,18 +266,13 @@ export function DashBoard() {
       setSearchLoading(false);
       return undefined;
     }
-
     let isCurrentSearch = true;
-
     const timeoutId = setTimeout(async () => {
       try {
         setSearchLoading(true);
         setSearchError("");
-
         const data = await SearchWorkout(exerciseSearch.trim());
-
         if (!isCurrentSearch) return;
-
         const rawResults = Array.isArray(data)
           ? data
           : data?.results ??
@@ -344,13 +280,11 @@ export function DashBoard() {
             data?.workouts ??
             data?.data ??
             [];
-
         const results = Array.isArray(rawResults)
           ? rawResults
           : rawResults?.results ??
             rawResults?.exercises ??
             [];
-
         setExerciseResults(results);
         setSearchError(
           results.length ? "" : "No matching exercises found."
@@ -366,14 +300,12 @@ export function DashBoard() {
         if (isCurrentSearch) setSearchLoading(false);
       }
     }, 250);
-
     return () => {
       isCurrentSearch = false;
       clearTimeout(timeoutId);
     };
   }, [exerciseSearch, isAddWorkoutOpen]);
-
-  function openAddWorkout() {
+  function openAddWorkoutForm() {
     setModalMode("add");
     setShowAddExerciseForm(true);
     setIsAddWorkoutOpen(true);
@@ -381,6 +313,43 @@ export function DashBoard() {
     setAddWorkoutMessage("");
   }
 
+  function openAddWorkout() {
+    if (selectedSession?.workoutTitle?.trim()) {
+      openAddWorkoutForm();
+      return;
+    }
+    setWorkoutTitleInput("");
+    setTitleSaveError("");
+    setShowDayTitleForm(true);
+  }
+
+  async function handleSaveDayTitle(event) {
+    event.preventDefault();
+    setTitleSaveError("");
+    const dayId = selectedSession?.id ?? selectedSession?.day_id;
+    if (dayId == null) {
+      setTitleSaveError("The selected routine day has no valid ID.");
+      return;
+    }
+    const title = workoutTitleInput.trim() || selectedSession.day;
+    try {
+      setTitleSaveLoading(true);
+      await UpdateWorkoutTitle(Number(dayId), title);
+      const updatedDays = await getAllDays(selectedRoutineId);
+      setRoutineDays(
+        Array.isArray(updatedDays)
+          ? updatedDays
+          : updatedDays?.days ?? updatedDays?.day_names ?? []
+      );
+      setShowDayTitleForm(false);
+      setWorkoutTitleInput("");
+      openAddWorkoutForm();
+    } catch (error) {
+      setTitleSaveError(error.message || "Could not save the workout title.");
+    } finally {
+      setTitleSaveLoading(false);
+    }
+  }
   function openWorkoutEditor() {
     setModalMode("edit");
     setShowAddExerciseForm(false);
@@ -389,7 +358,6 @@ export function DashBoard() {
     setAddWorkoutMessage("");
     setExpandedExerciseIds([]);
   }
-
   function closeWorkoutModal() {
     setIsAddWorkoutOpen(false);
     setShowAddExerciseForm(false);
@@ -400,46 +368,38 @@ export function DashBoard() {
     setAddWorkoutError("");
     setAddWorkoutMessage("");
   }
-
   function toggleExerciseSettings(exercise, index) {
     const exerciseKey = String(
       exercise.exercise_detail_id ??
       exercise.detail_id ??
       `${getExerciseId(exercise) ?? "exercise"}-${index}`
     );
-
     setExpandedExerciseIds((current) =>
       current.includes(exerciseKey)
         ? current.filter((id) => id !== exerciseKey)
         : [...current, exerciseKey]
     );
   }
-
   async function handleAddWorkout(event) {
     event.preventDefault();
     setAddWorkoutError("");
     setAddWorkoutMessage("");
-
     const dayId = selectedSession?.id ?? selectedSession?.day_id;
     const exerciseId = getExerciseId(selectedExercise);
-
     if (dayId == null || !Number.isFinite(Number(dayId))) {
       setAddWorkoutError(
         "The selected routine day has no valid ID."
       );
       return;
     }
-
     if (exerciseId == null) {
       setAddWorkoutError(
         "The exercise search result must include an exercise ID."
       );
       return;
     }
-
     try {
       setAddWorkoutLoading(true);
-
       await AddWorkout(
         Number(dayId),
         Number(exerciseId),
@@ -448,27 +408,21 @@ export function DashBoard() {
         Number(restTime),
         workoutNote.trim() || null
       );
-
       setAddWorkoutMessage("Exercise added successfully.");
-
       setExerciseSearch("");
       setExerciseResults([]);
       setSelectedExercise(null);
       setWorkoutNote("");
-
       await refreshWorkouts();
-
       if (selectedRoutineId) {
         const updatedDays = await getAllDays(selectedRoutineId);
-
         setRoutineDays(
           Array.isArray(updatedDays)
             ? updatedDays
             : updatedDays?.days ?? updatedDays?.day_names ?? []
         );
       }
-
-      // Keep the editor open after adding an exercise.
+// Keep the editor open after adding an exercise.
       if (modalMode === "edit") {
         setShowAddExerciseForm(false);
       } else {
@@ -482,15 +436,12 @@ export function DashBoard() {
       setAddWorkoutLoading(false);
     }
   }
-
   const selectedRoutine =
     routines.find(
       (routine) => routine.id === selectedRoutineId
     ) ?? null;
-
   useEffect(() => {
     let isMounted = true;
-
     async function fetchDays() {
       if (!selectedRoutineId) {
         setRoutineDays([]);
@@ -498,20 +449,15 @@ export function DashBoard() {
         setDaysError("");
         return;
       }
-
       try {
         setDaysLoading(true);
         setDaysError("");
         setRoutineDays([]);
-
         const data = await getAllDays(selectedRoutineId);
-
         if (!isMounted) return;
-
         const days = Array.isArray(data)
           ? data
           : data?.days ?? data?.day_names ?? [];
-
         setRoutineDays(days);
       } catch (error) {
         if (isMounted) {
@@ -523,49 +469,42 @@ export function DashBoard() {
         if (isMounted) setDaysLoading(false);
       }
     }
-
     fetchDays();
-
     return () => {
       isMounted = false;
     };
   }, [selectedRoutineId]);
-
   const weeklyTraining = weekdays.map((day, index) => {
     const apiDay = routineDays.find((item) => {
       const name = String(
         item.day_name ?? item.name ?? ""
       ).replace(/\s/g, "").toLowerCase();
-
       return name === `day${index + 1}`;
     });
-
     const exercises = apiDay?.exercises ?? [];
     const isRestDay = apiDay?.is_rest_day === true;
-
-    let title = "Add session";
+    const savedWorkoutTitle = String(apiDay?.workout_title ?? "").trim();
+    let title = savedWorkoutTitle || day;
     let description = "No workout assigned yet.";
-
     if (isRestDay) {
       title = "Rest day";
       description = "Recovery and preparation.";
     } else if (exercises.length > 0) {
       title =
-        apiDay?.workout_title ??
-        apiDay?.title ??
-        getExerciseName(exercises[0]) ??
-        "Workout";
-
+        savedWorkoutTitle ||
+        apiDay?.title ||
+        getExerciseName(exercises[0]) ||
+        day;
       description =
         exercises.length === 1
           ? "1 exercise assigned"
           : `${exercises.length} exercises assigned`;
     }
-
     return {
       id: apiDay?.day_id ?? apiDay?.id ?? null,
       day,
       title,
+      workoutTitle: savedWorkoutTitle,
       description,
       exercises,
       isRestDay,
@@ -573,19 +512,15 @@ export function DashBoard() {
       completed: false,
     };
   });
-
   const selectedSession =
     weeklyTraining.find((day) => day.day === selectedDay) ??
     weeklyTraining[0];
-
   const completedSessions = 0;
   const weeklyGoal = 5;
-
   const weeklyProgress = Math.min(
     (completedSessions / weeklyGoal) * 100,
     100
   );
-
   return (
     <div className="dashboard">
       <div className="dashboard-inner">
@@ -602,7 +537,6 @@ export function DashBoard() {
               >
                 <MenuIcon />
               </button>
-
               {isMenuOpen && (
                 <div className="dashboard-menu-dropdown" role="menu">
                   <button
@@ -613,7 +547,6 @@ export function DashBoard() {
                   >
                     Food
                   </button>
-
                   <button
                     type="button"
                     role="menuitem"
@@ -622,12 +555,10 @@ export function DashBoard() {
                   >
                     Training log
                   </button>
-
                   <div
                     className="dashboard-menu-divider"
                     role="separator"
                   />
-
                   <button
                     type="button"
                     role="menuitem"
@@ -642,21 +573,17 @@ export function DashBoard() {
                 </div>
               )}
             </div>
-
             <div className="dashboard-brand">
               <div className="dashboard-logo">
                 <ActivityIcon />
               </div>
-
               <span className="logo-name">PULSE</span>
             </div>
           </div>
-
           <div className="dashboard-right">
             <time className="dashboard-date-ovw" dateTime={iso}>
               <span className="dashboard-date-format">{label}</span>
             </time>
-
             <button
               className="dashboard-add-exercise-btn"
               type="button"
@@ -667,24 +594,20 @@ export function DashBoard() {
             </button>
           </div>
         </header>
-
         <main className="dashboard-main">
           <div className="dashboard-titles-container">
             <div className="dashboard-sub-top">
               <span>YOUR TRAINING CALENDAR</span>
             </div>
-
             <div className="dashboard-title">
               <h1>{titleMessage}</h1>
             </div>
-
             <div className="dashboard-sub-low">
               <span>
                 A quick look at your week and what's next.
               </span>
             </div>
           </div>
-
           <section
             className="dashboard-weekday-container"
             aria-label="Weekly training calendar"
@@ -695,22 +618,18 @@ export function DashBoard() {
                   Week {weekNumber}
                 </span>
               </div>
-
               <div className="weekday-hdr-right">
                 <span className="sessions-mini-tracker">
                   {completedSessions} sessions completed
                 </span>
               </div>
             </div>
-
             <div className="dashboard-weekday-main">
               {weekdays.map((day) => {
                 const session = weeklyTraining.find(
                   (item) => item.day === day
                 );
-
                 const isSelected = selectedDay === day;
-
                 return (
                   <button
                     className={`weekday-item ${
@@ -732,7 +651,6 @@ export function DashBoard() {
               })}
             </div>
           </section>
-
           <section
             className="dashboard-status-container"
             aria-label="Training overview"
@@ -742,13 +660,11 @@ export function DashBoard() {
                 <div className="session-card-eyebrow">
                   SELECTED · {selectedSession.day.toUpperCase()}
                 </div>
-
                 <h2 className="session-card-title">
                   {daysLoading
                     ? "Loading routine day..."
-                    : selectedSession.title}
+                    : selectedSession.workoutTitle || selectedSession.title}
                 </h2>
-
                 <p className="session-card-description">
                   {routinesLoading
                     ? "Loading routines..."
@@ -760,7 +676,6 @@ export function DashBoard() {
                           ? "Create or select a routine to get started."
                           : selectedSession.description}
                 </p>
-
                 <div className="current-session-footer">
                   {!selectedSession.hasWorkout ? (
                     <button
@@ -780,7 +695,6 @@ export function DashBoard() {
                       >
                         View workout
                       </button>
-
                       <button
                         className="dashboard-primary-btn"
                         type="button"
@@ -791,10 +705,75 @@ export function DashBoard() {
                     </>
                   )}
                 </div>
-
-                {isAddWorkoutOpen && (
+                {showDayTitleForm && (
                   <div
                     className="pulse-modal-backdrop pulse-workout-editor-backdrop"
+                    role="presentation"
+                    onMouseDown={(event) => {
+                    if (event.target === event.currentTarget) {
+                      setShowDayTitleForm(false);
+                    }
+                  }}
+                >
+                  <form
+                    onSubmit={handleSaveDayTitle}
+                    className="pulse-add-workout-form pulse-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="pulse-day-title-heading"
+                  >
+                    <div className="pulse-modal-heading-row">
+                      <div>
+                        <h3 id="pulse-day-title-heading">Name your workout day</h3>
+                        <p>Give {selectedSession.day} a title before adding exercises.</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="pulse-modal-close"
+                        aria-label="Close workout title form"
+                        onClick={() => setShowDayTitleForm(false)}
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                    <label htmlFor="pulse-workout-day-title">Workout day name</label>
+                    <input
+                      id="pulse-workout-day-title"
+                      className="pulse-modal-input"
+                      type="text"
+                      value={workoutTitleInput}
+                      onChange={(event) => setWorkoutTitleInput(event.target.value)}
+                      placeholder="e.g. Push Day, Chest & Back"
+                    />
+                    <p>Leave it empty to use {selectedSession.day}.</p>
+                    {titleSaveError && (
+                      <p role="alert" className="pulse-editor-error">
+                        {titleSaveError}
+                      </p>
+                    )}
+                    <div className="pulse-add-workout-actions">
+                      <button
+                        className="dashboard-primary-btn"
+                        type="submit"
+                        disabled={titleSaveLoading}
+                      >
+                        {titleSaveLoading ? "Saving..." : "Continue"}
+                      </button>
+                      <button
+                        type="button"
+                        className="pulse-editor-cancel"
+                        onClick={() => setShowDayTitleForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {isAddWorkoutOpen && (
+                <div
+                  className="pulse-modal-backdrop pulse-workout-editor-backdrop"
                     role="presentation"
                     onMouseDown={(event) => {
                       if (event.target === event.currentTarget) {
@@ -814,11 +793,9 @@ export function DashBoard() {
                             <div className="pulse-editor-eyebrow">
                               {selectedSession.day.toUpperCase()} · WORKOUT
                             </div>
-
                             <h2 id="pulse-editor-title">
                               {selectedSession.title}
                             </h2>
-
                             <p>
                               {selectedSession.exercises.length}{" "}
                               {selectedSession.exercises.length === 1
@@ -827,7 +804,6 @@ export function DashBoard() {
                               · Edit your routine
                             </p>
                           </div>
-
                           <button
                             type="button"
                             className="pulse-modal-close"
@@ -837,23 +813,19 @@ export function DashBoard() {
                             <CloseIcon />
                           </button>
                         </header>
-
                         <div className="pulse-editor-exercise-list">
                           {selectedSession.exercises.map(
                             (exercise, index) => {
                               const exerciseName =
                                 getExerciseName(exercise) ||
                                 "Unnamed exercise";
-
                               const exerciseKey = String(
                                 exercise.exercise_detail_id ??
                                 exercise.detail_id ??
                                 `${getExerciseId(exercise) ?? "exercise"}-${index}`
                               );
-
                               const isExpanded =
                                 expandedExerciseIds.includes(exerciseKey);
-
                               return (
                                 <article
                                   className="pulse-editor-exercise"
@@ -863,17 +835,14 @@ export function DashBoard() {
                                     <span className="pulse-editor-exercise-number">
                                       {index + 1}
                                     </span>
-
                                     <div className="pulse-editor-exercise-info">
                                       <h3>{exerciseName}</h3>
-
                                       <p>
                                         {exercise.sets ?? "—"} sets ·{" "}
                                         {exercise.reps ?? "—"} reps ·{" "}
                                         {exercise.rest_time ?? "—"} sec rest
                                       </p>
                                     </div>
-
                                     <span
                                       className="pulse-editor-grip"
                                       aria-hidden="true"
@@ -882,7 +851,6 @@ export function DashBoard() {
                                       <GripIcon />
                                     </span>
                                   </div>
-
                                   <button
                                     className="pulse-editor-settings-toggle"
                                     type="button"
@@ -894,7 +862,6 @@ export function DashBoard() {
                                     Exercise settings
                                     <ChevronIcon open={isExpanded} />
                                   </button>
-
                                   {isExpanded && (
                                     <div className="pulse-editor-settings">
                                       <label>
@@ -906,7 +873,6 @@ export function DashBoard() {
                                           readOnly
                                         />
                                       </label>
-
                                       <label>
                                         Reps
                                         <input
@@ -916,7 +882,6 @@ export function DashBoard() {
                                           readOnly
                                         />
                                       </label>
-
                                       <label>
                                         Rest (seconds)
                                         <input
@@ -926,14 +891,12 @@ export function DashBoard() {
                                           readOnly
                                         />
                                       </label>
-
                                       {exercise.note && (
                                         <p className="pulse-editor-note">
                                           <strong>Note:</strong>{" "}
                                           {exercise.note}
                                         </p>
                                       )}
-
                                       <p className="pulse-editor-readonly-hint">
                                         Editing existing exercise settings
                                         requires an update API.
@@ -945,7 +908,6 @@ export function DashBoard() {
                             }
                           )}
                         </div>
-
                         <button
                           className="pulse-editor-add-exercise"
                           type="button"
@@ -958,26 +920,22 @@ export function DashBoard() {
                           <AddIcon />
                           Add exercise
                         </button>
-
                         <p className="pulse-editor-help">
                           <span aria-hidden="true">ⓘ</span>
                           Tap an exercise to view its settings. Editing,
                           deleting and reordering saved exercises will
                           require the corresponding API operations.
                         </p>
-
                         {addWorkoutMessage && (
                           <p className="pulse-editor-success" role="status">
                             {addWorkoutMessage}
                           </p>
                         )}
-
                         {addWorkoutError && (
                           <p className="pulse-editor-error" role="alert">
                             {addWorkoutError}
                           </p>
                         )}
-
                         <button
                           className="pulse-editor-save"
                           type="button"
@@ -1001,12 +959,10 @@ export function DashBoard() {
                             <h3 id="pulse-modal-title">
                               Add an exercise
                             </h3>
-
                             <p>
                               Add an exercise to {selectedSession.day}.
                             </p>
                           </div>
-
                           <button
                             type="button"
                             className="pulse-modal-close"
@@ -1016,12 +972,10 @@ export function DashBoard() {
                             <CloseIcon />
                           </button>
                         </div>
-
                         <div className="pulse-exercise-search-wrap">
                           <label htmlFor="pulse-exercise-search">
                             Exercise name
                           </label>
-
                           <input
                             id="pulse-exercise-search"
                             className="pulse-modal-input"
@@ -1035,19 +989,16 @@ export function DashBoard() {
                             }}
                             placeholder="Start typing an exercise name..."
                           />
-
                           {searchLoading && (
                             <span className="pulse-search-hint">
                               Searching exercises…
                             </span>
                           )}
-
                           {searchError && (
                             <p role="alert" className="pulse-editor-error">
                               {searchError}
                             </p>
                           )}
-
                           {exerciseResults.length > 0 && (
                             <div
                               className="pulse-search-results"
@@ -1058,10 +1009,8 @@ export function DashBoard() {
                                 const exerciseName =
                                   getExerciseName(exercise) ||
                                   "Unnamed exercise";
-
                                 const exerciseId =
                                   getExerciseId(exercise);
-
                                 const isChosen =
                                   selectedExercise === exercise ||
                                   (
@@ -1071,7 +1020,6 @@ export function DashBoard() {
                                       getExerciseId(selectedExercise)
                                     ) === String(exerciseId)
                                   );
-
                                 return (
                                   <button
                                     key={`${exerciseId ?? exerciseName}-${index}`}
@@ -1096,7 +1044,6 @@ export function DashBoard() {
                               })}
                             </div>
                           )}
-
                           {selectedExercise && (
                             <p>
                               Selected:{" "}
@@ -1104,7 +1051,6 @@ export function DashBoard() {
                             </p>
                           )}
                         </div>
-
                         <div className="pulse-add-workout-fields">
                           <label>
                             Sets
@@ -1118,7 +1064,6 @@ export function DashBoard() {
                               }
                             />
                           </label>
-
                           <label>
                             Reps
                             <input
@@ -1131,7 +1076,6 @@ export function DashBoard() {
                               }
                             />
                           </label>
-
                           <label>
                             Rest (seconds)
                             <input
@@ -1145,7 +1089,6 @@ export function DashBoard() {
                             />
                           </label>
                         </div>
-
                         <label className="pulse-add-workout-note">
                           Note (optional)
                           <textarea
@@ -1157,19 +1100,16 @@ export function DashBoard() {
                             rows={3}
                           />
                         </label>
-
                         {addWorkoutError && (
                           <p role="alert" className="pulse-editor-error">
                             {addWorkoutError}
                           </p>
                         )}
-
                         {addWorkoutMessage && (
                           <p role="status" className="pulse-editor-success">
                             {addWorkoutMessage}
                           </p>
                         )}
-
                         <div className="pulse-add-workout-actions">
                           <button
                             className="dashboard-primary-btn"
@@ -1180,7 +1120,6 @@ export function DashBoard() {
                           >
                             {addWorkoutLoading ? "Adding..." : "Save exercise"}
                           </button>
-
                           <button
                             type="button"
                             className="pulse-editor-cancel"
@@ -1202,7 +1141,6 @@ export function DashBoard() {
                         </div>
                       </form>
                     )}
-
                     {modalMode === "edit" && showAddExerciseForm && (
                       <div className="pulse-editor-add-overlay">
                         <form
@@ -1221,7 +1159,6 @@ export function DashBoard() {
                                 Add an exercise to {selectedSession.day}.
                               </p>
                             </div>
-
                             <button
                               type="button"
                               className="pulse-modal-close"
@@ -1231,12 +1168,10 @@ export function DashBoard() {
                               <CloseIcon />
                             </button>
                           </div>
-
                           <div className="pulse-exercise-search-wrap">
                             <label htmlFor="pulse-editor-exercise-search">
                               Exercise name
                             </label>
-
                             <input
                               id="pulse-editor-exercise-search"
                               className="pulse-modal-input"
@@ -1250,26 +1185,21 @@ export function DashBoard() {
                               }}
                               placeholder="Start typing an exercise name..."
                             />
-
                             {searchLoading && (
                               <span className="pulse-search-hint">
                                 Searching exercises…
                               </span>
                             )}
-
                             {searchError && (
                               <p role="alert" className="pulse-editor-error">
                                 {searchError}
                               </p>
                             )}
-
                             {exerciseResults.map((exercise, index) => {
                               const name =
                                 getExerciseName(exercise) ||
                                 "Unnamed exercise";
-
                               const id = getExerciseId(exercise);
-
                               return (
                                 <button
                                   key={`${id ?? name}-${index}`}
@@ -1286,7 +1216,6 @@ export function DashBoard() {
                               );
                             })}
                           </div>
-
                           <div className="pulse-add-workout-fields">
                             <label>
                               Sets
@@ -1300,7 +1229,6 @@ export function DashBoard() {
                                 }
                               />
                             </label>
-
                             <label>
                               Reps
                               <input
@@ -1313,7 +1241,6 @@ export function DashBoard() {
                                 }
                               />
                             </label>
-
                             <label>
                               Rest (seconds)
                               <input
@@ -1327,7 +1254,6 @@ export function DashBoard() {
                               />
                             </label>
                           </div>
-
                           <label className="pulse-add-workout-note">
                             Note (optional)
                             <textarea
@@ -1339,13 +1265,11 @@ export function DashBoard() {
                               rows={3}
                             />
                           </label>
-
                           {addWorkoutError && (
                             <p role="alert" className="pulse-editor-error">
                               {addWorkoutError}
                             </p>
                           )}
-
                           <div className="pulse-add-workout-actions">
                             <button
                               className="dashboard-primary-btn"
@@ -1358,7 +1282,6 @@ export function DashBoard() {
                                 ? "Adding..."
                                 : "Save exercise"}
                             </button>
-
                             <button
                               type="button"
                               className="pulse-editor-cancel"
@@ -1373,7 +1296,6 @@ export function DashBoard() {
                   </div>
                 )}
               </article>
-
               <article className="last-session">
                 <div className="section-card-heading">
                   <h2>Last session</h2>
@@ -1381,7 +1303,6 @@ export function DashBoard() {
                     No session history
                   </span>
                 </div>
-
                 <div className="last-session-content">
                   <h3>No completed workouts yet</h3>
                   <p>
@@ -1391,13 +1312,11 @@ export function DashBoard() {
                 </div>
               </article>
             </div>
-
             <div className="right-inner-container">
               <article className="calorie-tracker">
                 <div className="section-card-heading">
                   <h2>Calorie tracker</h2>
                 </div>
-
                 <div className="calorie-tracker-content">
                   <h3>Coming later</h3>
                   <p>
@@ -1409,23 +1328,19 @@ export function DashBoard() {
                   </span>
                 </div>
               </article>
-
               <article className="weekly-progress">
                 <div className="section-card-heading">
                   <h2>Week at a glance</h2>
                 </div>
-
                 <div className="weekly-progress-main">
                   <div className="weekly-progress-number">
                     {completedSessions}
                   </div>
-
                   <div className="weekly-progress-label">
                     <span>sessions</span>
                     <span>completed</span>
                   </div>
                 </div>
-
                 <div
                   className="weekly-progress-track"
                   role="progressbar"
@@ -1439,7 +1354,6 @@ export function DashBoard() {
                     style={{ width: `${weeklyProgress}%` }}
                   />
                 </div>
-
                 <p className="weekly-progress-caption">
                   Session history will determine your weekly progress.
                 </p>

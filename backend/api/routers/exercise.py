@@ -1,5 +1,6 @@
 from api.custom_validators import (
    WorkoutAddValidator,
+   WorkoutTitleValidator,
 )
 from fastapi import APIRouter, HTTPException, status
 from services.exercise_service import (
@@ -7,6 +8,7 @@ from services.exercise_service import (
    edit_workout,
    search_workouts,
    show_workouts,
+   update_workout_title,
 )
 
 router = APIRouter()
@@ -53,3 +55,13 @@ def edited_workout(workouts:WorkoutAddValidator):
 def searched_exercises(exercise_name: str):
     result_query = search_workouts(exercise_name)
     return result_query
+
+
+@router.patch("/days/{day_id}/title", status_code=status.HTTP_202_ACCEPTED)
+def updated_workout_title(workout: WorkoutTitleValidator):
+   new_title = update_workout_title(
+      workout.day_id, workout.workout_title
+   )
+
+   return new_title
+
