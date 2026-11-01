@@ -1,5 +1,6 @@
+from api.custom_validators import SessionsLogValidator
 from fastapi import APIRouter, HTTPException, status
-from services.session_service import create_sesssions, fetch_days
+from services.session_service import create_sesssions, fetch_days, log_sessions
 
 router = APIRouter()
 
@@ -16,13 +17,27 @@ def fetch_routine_days(routine_id: int):
 
     return days_data
 
-
-
-@router.post("/createsession", status_code= status.HTTP_201_CREATED)
+@router.post("/createsession", status_code = status.HTTP_201_CREATED)
 def create_session(day_id:int):
     new_session = create_sesssions(day_id)
 
     return new_session
 
+
+@router.post("/logsession",status_code = status.HTTP_202_ACCEPTED)
+def log_session(session:SessionsLogValidator):
+    try:
+        log_sessions(
+            session.sessions_id,
+            session.exercise_id,
+            session.sets,
+            session.reps,
+            session.weight,
+            session.rest_time,
+        )
+    except KeyError:
+        raise KeyError("There is an invalid input ")
+    
+    
 
 

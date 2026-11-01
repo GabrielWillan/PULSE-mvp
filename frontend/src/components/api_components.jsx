@@ -130,8 +130,7 @@ export async function  UpdateWorkoutTitle(day_id, workout_title) {
 
 export async function EditWorkout({
   day_id,
-  exercise_detail_id,
-  exercise_id,
+  exercise_detaexercise_id,
   sets,
   reps,
   rest_time,
@@ -144,8 +143,7 @@ export async function EditWorkout({
     },
     body: JSON.stringify({
       day_id,
-      exercise_detail_id,
-      exercise_id,
+      exercise_detailexercise_id,
       sets,
       reps,
       rest_time,
@@ -206,4 +204,47 @@ export async function ReorderWorkoutExercises({ day_id, exercise_detail_ids }) {
   }
 
   return data;
+}
+
+
+export async function createSession(day_id) {
+  const Response = await fetch(
+    `http://localhost:8000/createsession?day_id=${encodeURIComponent(day_id)}`,
+    {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+    },
+    }
+  );
+
+  const Data = await Response.json().catch(() => ({}));
+  if(!Response.ok){
+    throw new Error(Data.detail ?? "Could not create session")
+  };
+  return Data;
+}
+
+
+export async function logSession(
+  sessions_id,
+  exercise_id,
+  sets,
+  reps,
+  weight,
+  rest_time,
+) {
+  const Response = await fetch("http://localhost:8000/logsession",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+    },
+    body:JSON.stringify({sessions_id, exercise_id, sets, reps, weight, rest_time})
+  });
+
+  const Data = Response.json();
+  if(!Response.ok){
+    throw new Error(Data.detail ?? "Cant log current session")
+  };
+  return Data;
 }

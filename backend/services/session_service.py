@@ -1,4 +1,3 @@
-#log, start,end,pause sessions
 import sqlite3 as sq
 
 
@@ -38,9 +37,9 @@ def create_sesssions(day_id:int):
        db.close()
 
        
-       return session_id, started_at[0]
+       return {"session_id":session_id, "started_at":started_at[0]}
        
-def log_sessions(sessions_id:int, exercise_id:str, sets:int, reps: int, weight:int):
+def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:int, rest_time:int):
     with sq.connect("database/main/pulse.db") as db:
         session = db.execute(
             """
@@ -55,10 +54,10 @@ def log_sessions(sessions_id:int, exercise_id:str, sets:int, reps: int, weight:i
         
         db.execute(
             """
-            INSERT INTO logsessions(exercise_id, sets, reps)
-            VALUES(?, ?, ?, ?)
+            INSERT INTO logsessions(sessions_id, exercise_id, sets, reps, weight, rest_time)
+            VALUES(?, ?, ?, ?, ?, ?)
             """,
-            (exercise_id, sets, reps, weight,)
+            (session[0], exercise_id, sets, reps, weight, rest_time )
         )
         db.commit()
 

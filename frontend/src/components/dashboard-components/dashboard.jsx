@@ -2,10 +2,12 @@ import "./DashBoard.css";
 import "./AddWorkoutModal.css";
 import "./PulseEditorExerciseEdit.css";
 import "./SessionPreview.css";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getAllRoutines, getAllDays } from "../api_components";
+import { getAllRoutines, getAllDays, createSession } from "../api_components";
 import { AddWorkout, ShowWorkout, SearchWorkout, UpdateWorkoutTitle, EditWorkout, ReorderWorkoutExercises } from "../api_components";
+import { SessionOverview } from "../session_components/session_overview";
 // Route of the routine menu screen (used by "Go back to menu").
 const MENU_ROUTE = "/";
 const REST_UNIT_PREFERENCES_KEY = "pulse.exerciseRestUnits";
@@ -202,12 +204,26 @@ export function DashBoard() {
   const [selectedDay, setSelectedDay] = useState("Day 1");
 // Header menu dropdown
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const menuDropdownRef = useRef(null);
+  const updateMenuPosition = useCallback(() => {
+    const rect = menuButtonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const dropdownWidth = 220;
+    setMenuPosition({
+      top: rect.bottom + 10,
+      left: Math.max(12, Math.min(rect.left, window.innerWidth - dropdownWidth - 12)),
+    });
+  }, []);
 // Close the dropdown on outside click or Escape.
   useEffect(() => {
     if (!isMenuOpen) return undefined;
     function handlePointerDown(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      const clickedMenuButton = menuRef.current?.contains(event.target);
+      const clickedDropdown = menuDropdownRef.current?.contains(event.target);
+      if (!clickedMenuButton && !clickedDropdown) {
         setIsMenuOpen(false);
       }
     }
@@ -221,6 +237,18 @@ export function DashBoard() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    function repositionMenu() {
+      updateMenuPosition();
+    }
+    window.addEventListener("resize", repositionMenu);
+    window.addEventListener("scroll", repositionMenu, true);
+    return () => {
+      window.removeEventListener("resize", repositionMenu);
+      window.removeEventListener("scroll", repositionMenu, true);
+    };
+  }, [isMenuOpen, updateMenuPosition]);
   const [selectedRoutineId, setSelectedRoutineId] = useState(
     clickedRoutine?.id ?? null
   );
@@ -237,6 +265,8 @@ export function DashBoard() {
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
   const [isSessionPreviewOpen, setIsSessionPreviewOpen] = useState(false);
   const [sessionPreviewMessage, setSessionPreviewMessage] = useState("");
+  const [sessionStartLoading, setSessionStartLoading] = useState(false);
+  const [activeSession, setActiveSession] = useState(null);
   const [showDayTitleForm, setShowDayTitleForm] = useState(false);
   const [workoutTitleInput, setWorkoutTitleInput] = useState("");
   const [titleSaveLoading, setTitleSaveLoading] = useState(false);
@@ -327,7 +357,7 @@ export function DashBoard() {
     refreshWorkouts();
   }, []);
   useEffect(() => {
-    if (!isAddWorkoutOpen || !exerciseSearch.trim()) {
+    if (!isAddWorkoutOpen || !exerciseSearch.trim() || selectedExercise) {
       setExerciseResults([]);
       setSearchError("");
       setSearchLoading(false);
@@ -371,7 +401,7 @@ export function DashBoard() {
       isCurrentSearch = false;
       clearTimeout(timeoutId);
     };
-  }, [exerciseSearch, isAddWorkoutOpen]);
+  }, [exerciseSearch, isAddWorkoutOpen, selectedExercise]);
   function openAddWorkoutForm() {
     setModalMode("add");
     setShowAddExerciseForm(true);
@@ -892,6 +922,63 @@ export function DashBoard() {
     (completedSessions / weeklyGoal) * 100,
     100
   );
+
+  async function handleStartSession() {
+    const numericDayId = Number(selectedSession.id);
+    if (!Number.isInteger(numericDayId) || numericDayId < 1) {
+      setSessionPreviewMessage("This routine day does not have a valid ID.");
+      return;
+    }
+
+    try {
+      setSessionStartLoading(true);
+      setSessionPreviewMessage("");
+      const createdSession = await createSession(numericDayId);
+      const sessionId =
+        createdSession?.session_id ??
+        createdSession?.sessions_id ??
+        createdSession?.id ??
+        createdSession?.data?.session_id;
+
+      if (sessionId == null) {
+        throw new Error("The sessions API did not return a session ID.");
+      }
+
+      setActiveSession({
+        ...selectedSession,
+        sessionId,
+        startedAt:
+          createdSession?.started_at ??
+          createdSession?.startedAt ??
+          createdSession?.data?.started_at ??
+          null,
+        routineId: selectedRoutineId,
+        routineName:
+          selectedRoutine?.name ??
+          selectedRoutine?.title_name ??
+          selectedRoutine?.title ??
+          "PULSE",
+      });
+      setIsSessionPreviewOpen(false);
+    } catch (error) {
+      setSessionPreviewMessage(
+        error.message || "Could not start this session."
+      );
+    } finally {
+      setSessionStartLoading(false);
+    }
+  }
+
+  if (activeSession) {
+    return (
+      <SessionOverview
+        session={activeSession}
+        restUnitPreferences={exerciseRestUnitPreferences}
+        onExit={() => setActiveSession(null)}
+      />
+    );
+  }
+
   return (
     <div className="dashboard">
       <div className="dashboard-inner">
@@ -899,17 +986,26 @@ export function DashBoard() {
           <div className="dashboard-left">
             <div className="dashboard-menu" ref={menuRef}>
               <button
+                ref={menuButtonRef}
                 className="dashboard-menu-btn"
                 type="button"
                 aria-label="Open menu"
                 aria-haspopup="menu"
                 aria-expanded={isMenuOpen}
-                onClick={() => setIsMenuOpen((open) => !open)}
+                onClick={() => {
+                  if (!isMenuOpen) updateMenuPosition();
+                  setIsMenuOpen((open) => !open);
+                }}
               >
                 <MenuIcon />
               </button>
-              {isMenuOpen && (
-                <div className="dashboard-menu-dropdown" role="menu">
+              {isMenuOpen && createPortal(
+                <div
+                  ref={menuDropdownRef}
+                  className="dashboard-menu-dropdown"
+                  role="menu"
+                  style={{ top: menuPosition.top, left: menuPosition.left }}
+                >
                   <button
                     type="button"
                     role="menuitem"
@@ -941,7 +1037,8 @@ export function DashBoard() {
                   >
                     Go back to menu
                   </button>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
             <div className="dashboard-brand">
@@ -1537,7 +1634,7 @@ export function DashBoard() {
                               {searchError}
                             </p>
                           )}
-                          {exerciseResults.length > 0 && (
+                          {!selectedExercise && exerciseResults.length > 0 && (
                             <div
                               className="pulse-search-results"
                               role="listbox"
@@ -1565,6 +1662,7 @@ export function DashBoard() {
                                     onClick={() => {
                                       setSelectedExercise(exercise);
                                       setExerciseSearch(exerciseName);
+                                      setExerciseResults([]);
                                       setSearchError("");
                                       setAddWorkoutError("");
                                     }}
@@ -1581,12 +1679,6 @@ export function DashBoard() {
                                 );
                               })}
                             </div>
-                          )}
-                          {selectedExercise && (
-                            <p>
-                              Selected:{" "}
-                              {getExerciseName(selectedExercise)}
-                            </p>
                           )}
                         </div>
                         <div className="pulse-add-workout-fields">
@@ -1744,7 +1836,7 @@ export function DashBoard() {
                                 {searchError}
                               </p>
                             )}
-                            {exerciseResults.map((exercise, index) => {
+                            {!selectedExercise && exerciseResults.map((exercise, index) => {
                               const name =
                                 getExerciseName(exercise) ||
                                 "Unnamed exercise";
@@ -1757,7 +1849,9 @@ export function DashBoard() {
                                   onClick={() => {
                                     setSelectedExercise(exercise);
                                     setExerciseSearch(name);
+                                    setExerciseResults([]);
                                     setSearchError("");
+                                    setAddWorkoutError("");
                                   }}
                                 >
                                   {name}
@@ -1988,11 +2082,11 @@ export function DashBoard() {
                       <button
                         type="button"
                         className="session-preview-start"
-                        onClick={() => setSessionPreviewMessage(
-                          "Session tracking will be connected when the sessions API is ready."
-                        )}
+                        onClick={handleStartSession}
+                        disabled={sessionStartLoading}
                       >
-                        Start workout <span aria-hidden="true">›</span>
+                        {sessionStartLoading ? "Starting…" : "Start workout"}
+                        <span aria-hidden="true">›</span>
                       </button>
                     </footer>
                   </section>

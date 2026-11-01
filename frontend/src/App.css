@@ -29,3 +29,92 @@ textarea,
 select {
   font: inherit;
 }
+
+.app-route-transition {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-route-transition.is-entering .routines-hdr,
+.app-route-transition.is-entering .routines-side,
+.app-route-transition.is-entering .routines-group,
+.app-route-transition.is-entering .routines-empty,
+.app-route-transition.is-entering .dashboard-hdr,
+.app-route-transition.is-entering .dashboard-titles-container,
+.app-route-transition.is-entering .dashboard-weekday-container,
+.app-route-transition.is-entering .last-session,
+.app-route-transition.is-entering .calorie-tracker,
+.app-route-transition.is-entering .weekly-progress,
+.app-route-transition.is-entering .current-session > .session-card-eyebrow,
+.app-route-transition.is-entering .current-session > .session-card-title,
+.app-route-transition.is-entering .current-session > .session-card-description,
+.app-route-transition.is-entering .current-session > .current-session-footer {
+  animation: pulse-component-fade-in 240ms ease-out both;
+}
+
+.app-route-transition.is-entering .routines-side,
+.app-route-transition.is-entering .dashboard-titles-container {
+  animation-delay: 35ms;
+}
+
+.app-route-transition.is-entering .routines-group,
+.app-route-transition.is-entering .dashboard-weekday-container,
+.app-route-transition.is-entering .last-session,
+.app-route-transition.is-entering .weekly-progress,
+.app-route-transition.is-entering .current-session > .session-card-title {
+  animation-delay: 70ms;
+}
+
+.app-route-transition.is-entering .calorie-tracker {
+  animation-delay: 105ms;
+}
+
+.app-route-transition.is-entering .current-session > .session-card-description,
+.app-route-transition.is-entering .current-session > .current-session-footer {
+  animation-delay: 105ms;
+}
+
+.app-route-transition.is-exiting .routines-hdr,
+.app-route-transition.is-exiting .routines-side,
+.app-route-transition.is-exiting .routines-group,
+.app-route-transition.is-exiting .routines-empty,
+.app-route-transition.is-exiting .dashboard-hdr,
+.app-route-transition.is-exiting .dashboard-titles-container,
+.app-route-transition.is-exiting .dashboard-weekday-container,
+.app-route-transition.is-exiting .last-session,
+.app-route-transition.is-exiting .calorie-tracker,
+.app-route-transition.is-exiting .weekly-progress,
+.app-route-transition.is-exiting .current-session > .session-card-eyebrow,
+.app-route-transition.is-exiting .current-session > .session-card-title,
+.app-route-transition.is-exiting .current-session > .session-card-description,
+.app-route-transition.is-exiting .current-session > .current-session-footer {
+  animation: pulse-component-fade-out 140ms ease-in both;
+}
+
+.app-route-transition.is-exiting {
+  pointer-events: none;
+}
+
+.app-route-transition.is-exiting .dashboard-titles-container,
+.app-route-transition.is-exiting .current-session > .session-card-title,
+.app-route-transition.is-exiting .calorie-tracker {
+  animation-delay: 25ms;
+}
+
+@keyframes pulse-component-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-component-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-route-transition.is-entering *,
+  .app-route-transition.is-exiting * {
+    animation: none;
+  }
+}

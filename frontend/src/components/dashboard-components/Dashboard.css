@@ -999,11 +999,13 @@
 }
 
 .dashboard-menu-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  z-index: 50;
+  --tx: #eaf1ff;
+  position: fixed;
+  z-index: 1200;
   min-width: 220px;
+  max-width: calc(100vw - 24px);
+  max-height: min(320px, calc(100dvh - 24px));
+  overflow-y: auto;
   padding: 6px;
   display: flex;
   flex-direction: column;
