@@ -2,29 +2,63 @@
 import sqlite3 as sq
 
 
-def create_sesssions(day_id: int):
-    with sq.connect("database/main/pulse.db") as db:
-        cursor =db.execute(
-            """
-            INSERT INTO sessions(day_id)
-            VALUES(?)
-            """,
-            (day_id,)
+def create_sesssions(day_id:int):
+       db = sq.connect("database/main/pulse.db")
+       day = db.execute(
+           """
+           SELECT id
+           FROM routinedays
+           WHERE id = ?
+           """,
+           (day_id, )
+        ).fetchone()
+       
+       if day is None:
+           raise KeyError(f"day id: {day_id}dosen't not exist")
+       
+       cursor =db.execute(
+           """
+           INSERT INTO sessions(day_id)
+           VALUES(?);
+           """,
+           (day[0], )
         )
-        sessions_id = cursor.lastrowid
-        db.commit()
+       
+       session_id = cursor.lastrowid
+       
+       started_at = db.execute(
+           """
+           SELECT started_at
+           FROM sessions
+           WHERE id = ?
+           """,
+           (session_id, )
+        ).fetchone()
+       db.commit()
+       db.close()
 
-    return sessions_id
-    
-
-def log_sessions(sessions_id:int, exercise_name:str, sets:int, reps: int,):
+       
+       return session_id, started_at[0]
+       
+def log_sessions(sessions_id:int, exercise_id:str, sets:int, reps: int, weight:int):
     with sq.connect("database/main/pulse.db") as db:
+        session = db.execute(
+            """
+            SELECT id
+            FROM sessions
+            WHERE id = ?
+            """,
+            (sessions_id, )
+        ).fetchone()
+        if session is None:
+            raise KeyError("NAHHH")
+        
         db.execute(
             """
-            INSERT INTO logsessions(sessions_id, exercise_name, sets, reps)
+            INSERT INTO logsessions(exercise_id, sets, reps)
             VALUES(?, ?, ?, ?)
             """,
-            (sessions_id, exercise_name, sets, reps,)
+            (exercise_id, sets, reps, weight,)
         )
         db.commit()
 
@@ -80,6 +114,7 @@ def fetch_days(routine_id: int):
 
         if routine is None:
             raise KeyError(f"Routine id {routine_id} was not found")
+        
 
         days = db.execute(
             """
@@ -99,7 +134,7 @@ def fetch_days(routine_id: int):
                 ON ed.day_id = rd.id
             LEFT JOIN catalog AS c
                 ON c.id = ed.exercise_id
-            WHERE rd.routine_id = ?
+            WHERE rd.routine_id = ? 
             ORDER BY rd.id;
             """,
             (routine_id,),
@@ -109,12 +144,14 @@ def fetch_days(routine_id: int):
 
         for day in days:
             day_id = day["day_id"]
+            exercise_detail_id = day["exercise_detail_id"]
             day_name = day["day_name"]
             workout_title = day["workout_title"]
 
             if day_id not in result:
                 result[day_id] = {
                     "id": day_id,
+                    "exercise_detail_id": exercise_detail_id,
                     "day_name": day_name,
                     "workout_title":workout_title,
                     "exercises": [],
@@ -124,6 +161,7 @@ def fetch_days(routine_id: int):
                 result[day_id]["exercises"].append(
                     {
                         "id": day["exercise_id"],
+                        "exercise_detail_id": day["exercise_detail_id"],
                         "name": day["exercise_name"],
                         "sets": day["sets"],
                         "reps": day["reps"],

@@ -1,0 +1,836 @@
+.session-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(3, 8, 20, 0.78);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: session-preview-fade-in 160ms ease-out;
+}
+
+.session-preview-modal {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  width: min(100%, 740px);
+  max-height: min(90vh, 900px);
+  padding: 34px 36px 32px;
+  overflow: hidden;
+  color: #f7f9ff;
+  background: linear-gradient(150deg, #101b30 0%, #091326 100%);
+  border: 1px solid rgba(134, 158, 195, 0.32);
+  border-radius: 27px;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(54, 125, 255, 0.06);
+  animation: session-preview-rise-in 180ms ease-out;
+}
+
+.session-preview-editor .pulse-editor-exercise {
+  padding: 14px 18px;
+  background: rgba(3, 12, 28, 0.62);
+  border: 1px solid rgba(49, 105, 181, 0.48);
+  border-radius: 19px;
+}
+
+.session-preview-editor .pulse-editor-exercise-main {
+  gap: 16px;
+}
+
+.session-preview-editor .pulse-editor-exercise-info h3 {
+  margin: 0 0 3px;
+  color: #f5f8ff;
+  font-size: 1.13rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.session-preview-editor .pulse-editor-exercise-info p {
+  margin: 0;
+  color: #9aafd0;
+  font-size: 0.96rem;
+  line-height: 1.4;
+}
+
+.session-preview-editor .session-preview-note {
+  margin-top: 3px;
+  color: #8fc0ff;
+  font-size: 0.91rem;
+}
+
+.session-preview-editor .pulse-editor-grip-button {
+  color: #90a9d0;
+  border-radius: 10px;
+}
+
+.session-preview-editor .pulse-editor-grip-button:hover {
+  color: #c4ddff;
+  background: rgba(59, 130, 246, 0.13);
+}
+
+.session-preview-editor .pulse-editor-settings-toggle {
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(49, 105, 181, 0.34);
+  color: #8fc0ff;
+}
+
+.session-preview-editor .pulse-editor-add-exercise {
+  min-height: 48px;
+  border-color: rgba(49, 105, 181, 0.56);
+  border-radius: 15px;
+  background: rgba(3, 12, 28, 0.42);
+  color: #b7d3ff;
+}
+
+.session-preview-editor .pulse-editor-help {
+  margin-top: -5px;
+  color: #8fa7cc;
+}
+
+.session-preview-editor .session-preview-actions button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.session-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.session-preview-eyebrow {
+  margin: 1px 0 11px;
+  color: #66a3ff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.19em;
+  line-height: 1.3;
+}
+
+.session-preview-header h2 {
+  margin: 0;
+  color: #f8faff;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.1;
+}
+
+.session-preview-header p {
+  margin: 8px 0 0;
+  color: #9aafd0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.session-preview-close {
+  display: grid;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  color: #d9e5f8;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.session-preview-close:hover {
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.42);
+}
+
+.session-preview-close:focus-visible,
+.session-preview-actions button:focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.72);
+  outline-offset: 3px;
+}
+
+.session-preview-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.session-preview-metric {
+  display: flex;
+  min-height: 100px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px 10px;
+  background: rgba(3, 12, 28, 0.64);
+  border: 1px solid rgba(49, 105, 181, 0.48);
+  border-radius: 20px;
+  text-align: center;
+}
+
+.session-preview-metric > span {
+  color: #90a9d0;
+  font-size: 0.79rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.session-preview-metric strong {
+  color: #f8faff;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.session-preview-metric small {
+  color: #8fa7cc;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.session-preview-exercises {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 0 3px 1px 0;
+  scrollbar-color: rgba(89, 137, 203, 0.55) transparent;
+  scrollbar-width: thin;
+}
+
+.session-preview-exercise {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 76px;
+  padding: 14px 18px;
+  background: rgba(3, 12, 28, 0.62);
+  border: 1px solid rgba(49, 105, 181, 0.48);
+  border-radius: 19px;
+}
+
+.session-preview-number {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: #a7caff;
+  background: #1d3e6a;
+  border-radius: 13px;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.session-preview-exercise-copy {
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.session-preview-exercise h3 {
+  margin: 0 0 3px;
+  color: #f5f8ff;
+  font-size: 1.13rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.session-preview-exercise p {
+  margin: 0;
+  color: #9aafd0;
+  font-size: 0.96rem;
+  line-height: 1.4;
+}
+
+.session-preview-exercise .session-preview-note {
+  margin-top: 3px;
+  color: #8fc0ff;
+  font-size: 0.91rem;
+}
+
+.session-preview-note span {
+  font-weight: 700;
+}
+
+.session-preview-status {
+  margin: -4px 0 0;
+  color: #a9caff;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.session-preview-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 1px;
+}
+
+.session-preview-actions button {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-radius: 19px;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease,
+    border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.session-preview-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.session-preview-cancel {
+  color: #9fc4ff;
+  background: rgba(11, 23, 43, 0.82);
+  border: 1px solid #2466c8;
+}
+
+.session-preview-cancel:hover {
+  background: rgba(35, 75, 132, 0.24);
+  border-color: #4a91ff;
+}
+
+.session-preview-start {
+  color: white;
+  background: #347df0;
+  border: 1px solid #347df0;
+  box-shadow: 0 11px 26px rgba(35, 111, 245, 0.22);
+}
+
+.session-preview-start:hover {
+  background: #478cff;
+  border-color: #478cff;
+  box-shadow: 0 13px 30px rgba(35, 111, 245, 0.32);
+}
+
+.session-preview-start span {
+  font-size: 1.65rem;
+  font-weight: 400;
+  line-height: 0.8;
+}
+
+@keyframes session-preview-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes session-preview-rise-in {
+  from { opacity: 0; transform: translateY(9px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 600px) {
+  .session-preview-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .session-preview-modal {
+    width: 100%;
+    max-height: 94vh;
+    gap: 15px;
+    padding: 23px 18px 18px;
+    border-radius: 22px;
+  }
+
+  .session-preview-eyebrow {
+    max-width: 245px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+  }
+
+  .session-preview-close {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .session-preview-metrics {
+    gap: 8px;
+  }
+
+  .session-preview-metric {
+    min-height: 78px;
+    gap: 5px;
+    padding: 10px 5px;
+    border-radius: 14px;
+  }
+
+  .session-preview-metric > span {
+    font-size: 0.61rem;
+    letter-spacing: 0.08em;
+  }
+
+  .session-preview-metric strong {
+    font-size: 1.5rem;
+  }
+
+  .session-preview-exercise {
+    gap: 12px;
+    min-height: 68px;
+    padding: 12px;
+    border-radius: 15px;
+  }
+
+  .session-preview-number {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    font-size: 1rem;
+  }
+
+  .session-preview-exercise h3 {
+    font-size: 1rem;
+  }
+
+  .session-preview-exercise p {
+    font-size: 0.84rem;
+  }
+
+  .session-preview-actions {
+    gap: 9px;
+  }
+
+  .session-preview-actions button {
+    min-height: 56px;
+    gap: 7px;
+    padding: 10px 8px;
+    border-radius: 15px;
+    font-size: 0.96rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-preview-backdrop,
+  .session-preview-modal {
+    animation: none;
+  }
+
+  .session-preview-actions button {
+    transition: none;
+  }
+}
+
+/* Compact side editor: keep the dialog controls fixed and scroll the list only. */
+.session-preview-backdrop.pulse-workout-editor-backdrop {
+  overflow: hidden;
+  padding: 12px;
+}
+
+.session-preview-editor {
+  width: min(100%, 960px);
+  height: min(92vh, 820px);
+  max-height: min(92vh, 820px);
+  gap: 15px;
+  padding: 28px;
+  overflow: hidden;
+}
+
+.session-preview-editor > .session-preview-header,
+.session-preview-editor > .session-preview-metrics,
+.session-preview-editor > .session-preview-actions {
+  flex: 0 0 auto;
+}
+
+.session-preview-editor .session-preview-eyebrow {
+  margin-bottom: 7px;
+  font-size: 0.75rem;
+}
+
+.session-preview-editor .session-preview-header h2 {
+  font-size: clamp(1.8rem, 4vw, 2.3rem);
+}
+
+.session-preview-editor .session-preview-header p {
+  margin-top: 5px;
+  font-size: 0.91rem;
+}
+
+.session-preview-editor .session-preview-metric {
+  min-height: 72px;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 15px;
+}
+
+.session-preview-editor .session-preview-metric strong {
+  font-size: 1.55rem;
+}
+
+.session-preview-editor .session-preview-metric > span {
+  font-size: 0.69rem;
+}
+
+.session-preview-editor > .session-preview-workspace {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  align-items: stretch;
+  gap: 22px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.session-preview-order {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+}
+
+.session-preview-section-title {
+  flex: 0 0 auto;
+  margin: 2px 0 10px;
+  color: #c3d3eb;
+  font-size: 0.85rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.session-preview-workout-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 5px;
+  scrollbar-color: rgba(89, 137, 203, 0.55) transparent;
+  scrollbar-width: thin;
+}
+
+.session-preview-editor .session-preview-workspace-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+  min-height: 62px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 17px;
+}
+
+.session-preview-editor .session-preview-workspace-row.is-active {
+  background: rgba(29, 61, 105, 0.38);
+  border-color: rgba(69, 132, 222, 0.42);
+}
+
+.session-preview-exercise-select {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.session-preview-exercise-select:focus-visible {
+  outline: 2px solid #78aaff;
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+.session-preview-exercise-select .session-preview-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 1rem;
+}
+
+.session-preview-order-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-preview-order-copy strong {
+  color: #f5f8ff;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.session-preview-order-copy small {
+  color: #91a8ca;
+  font-size: 0.79rem;
+  line-height: 1.35;
+}
+
+.session-preview-editor .pulse-editor-grip-button {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.session-preview-editor .pulse-editor-add-exercise {
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  width: fit-content;
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border-style: dashed;
+}
+
+.session-preview-editor-panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 15px;
+  border: 1px solid rgba(100, 142, 197, 0.26);
+  border-radius: 22px;
+  background: rgba(3, 12, 28, 0.5);
+  box-shadow: none;
+}
+
+.session-preview-editor-panel > h3 {
+  margin: 0;
+  color: #f6f8ff;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.session-preview-editor-count {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #9aafd0;
+  font-size: 0.78rem;
+}
+
+.session-preview-editor-panel .pulse-editor-edit-exercise-picker {
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.session-preview-editor-panel .session-preview-editor-fields {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+}
+
+.session-preview-editor-panel .session-preview-editor-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  color: #afc1dc;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.session-preview-editor-panel .session-preview-editor-field input,
+.session-preview-editor-panel .session-preview-editor-field select,
+.session-preview-editor-panel .session-preview-editor-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid #29466c;
+  border-radius: 12px;
+  color: #f5f8ff;
+  background: #081426;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.session-preview-editor-panel .session-preview-editor-field textarea {
+  min-height: 52px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.session-preview-editor-panel .session-preview-editor-note {
+  grid-column: 1 / -1;
+}
+
+.session-preview-editor-panel .pulse-editor-edit-exercise-picker > label {
+  color: #afc1dc;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.session-preview-editor-panel .pulse-editor-edit-exercise-picker input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid #29466c;
+  border-radius: 12px;
+  color: #f5f8ff;
+  background: #081426;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.session-preview-editor-panel .session-preview-name-picker {
+  margin-top: 1px;
+}
+
+.session-preview-editor-panel .pulse-editor-edit-exercise-picker input:focus,
+.session-preview-editor-panel .session-preview-editor-field input:focus,
+.session-preview-editor-panel .session-preview-editor-field select:focus,
+.session-preview-editor-panel .session-preview-editor-field textarea:focus {
+  border-color: #78aaff;
+  outline: 2px solid rgba(59, 130, 246, 0.28);
+  outline-offset: 1px;
+}
+
+.session-preview-editor-panel .pulse-editor-save-changes {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 0;
+  border-radius: 13px;
+  font-size: 0.94rem;
+}
+
+.session-preview-editor-panel .pulse-editor-save-changes:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.session-preview-editor .session-preview-actions button {
+  min-height: 52px;
+  padding: 10px 16px;
+  border-radius: 15px;
+  font-size: 0.98rem;
+}
+
+@media (max-height: 740px) and (min-width: 761px) {
+  .session-preview-editor {
+    gap: 10px;
+    padding: 18px 22px;
+  }
+
+  .session-preview-editor-panel {
+    gap: 7px;
+    padding: 12px;
+  }
+
+  .session-preview-editor-panel .session-preview-editor-field textarea {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 760px) {
+  .session-preview-backdrop.pulse-workout-editor-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .session-preview-editor {
+    width: min(100%, 680px);
+    height: auto;
+    max-height: none;
+    gap: 17px;
+    padding: 26px;
+    overflow: visible;
+  }
+
+  .session-preview-editor > .session-preview-workspace {
+    flex: 0 0 auto;
+  }
+
+  .session-preview-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 19px;
+    overflow: visible;
+  }
+
+  .session-preview-order {
+    height: auto;
+  }
+
+  .session-preview-workout-list {
+    flex: 0 1 260px;
+    max-height: 260px;
+  }
+
+  .session-preview-workout-list {
+    gap: 4px;
+  }
+
+  .session-preview-editor-panel {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .session-preview-editor {
+    width: 100%;
+    max-height: none;
+    gap: 15px;
+    padding: 23px 18px 18px;
+    overflow: visible;
+  }
+
+  .session-preview-editor .session-preview-metrics {
+    gap: 8px;
+    margin: 0;
+  }
+
+  .session-preview-workspace {
+    gap: 16px;
+  }
+
+  .session-preview-editor .session-preview-workspace-row {
+    min-height: 64px;
+    padding: 8px;
+  }
+
+  .session-preview-editor-panel {
+    gap: 15px;
+    padding: 17px;
+  }
+
+  .session-preview-editor-panel .session-preview-editor-fields {
+    gap: 12px;
+  }
+}

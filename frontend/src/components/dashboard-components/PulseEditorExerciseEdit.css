@@ -1,0 +1,81 @@
+/* Targeted styling for the PULSE saved-exercise editor. */
+.pulse-editor-edit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px solid rgba(130, 170, 224, 0.26);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(22, 48, 90, 0.72), rgba(10, 25, 48, 0.86));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 28px rgba(2, 8, 24, 0.35);
+}
+.pulse-editor-edit-heading { display: flex; flex-direction: column; gap: 5px; }
+.pulse-editor-edit-kicker { color: #70aaff; font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.pulse-editor-edit-heading p { margin: 0; color: #9eb5d6; font-size: 13px; }
+.pulse-editor-edit-panel label { display: flex; flex-direction: column; gap: 8px; min-width: 0; color: #b9cce7; font-size: 12px; font-weight: 650; }
+.pulse-editor-edit-panel input,
+.pulse-editor-edit-panel textarea {
+  width: 100%; min-width: 0; box-sizing: border-box; color: #f4f7ff;
+  border: 1px solid #315078; border-radius: 11px;
+  background: rgba(10, 25, 48, .7); padding: 12px 13px; font: inherit; font-size: 14px;
+  outline: none; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.pulse-rest-time-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 68px;
+  gap: 8px;
+  min-width: 0;
+}
+.pulse-rest-time-control select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 7px;
+  color: #f4f7ff;
+  background: #0a1930;
+  border: 1px solid #315078;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pulse-rest-time-control select:focus-visible {
+  border-color: #78aaff;
+  outline: 2px solid rgba(59, 130, 246, 0.32);
+  outline-offset: 1px;
+}
+.pulse-modal .pulse-rest-time-control input[type="number"] {
+  margin-top: 0;
+}
+.pulse-editor-edit-panel input:focus,
+.pulse-editor-edit-panel textarea:focus { border-color: #78aaff; background: rgba(10, 25, 48, .92); box-shadow: 0 0 0 3px rgba(59, 130, 246, .18); }
+.pulse-editor-edit-panel textarea { resize: vertical; line-height: 1.5; }
+.pulse-editor-edit-exercise-picker { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.pulse-editor-field-hint { color: #7f98bd; font-size: 11px; font-weight: 500; }
+.pulse-editor-edit-search-results { position: absolute; z-index: 5; top: calc(100% - 24px); left: 0; right: 0; max-height: 190px; overflow-y: auto; padding: 5px; border: 1px solid #29476f; border-radius: 12px; background: rgba(11, 27, 53, .97); box-shadow: 0 16px 34px rgba(2, 8, 24, .55); }
+.pulse-editor-edit-search-results button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 11px 10px; border: 0; border-radius: 8px; color: #f4f7ff; background: transparent; text-align: left; cursor: pointer; }
+.pulse-editor-edit-search-results button:hover,
+.pulse-editor-edit-search-results button[aria-selected="true"] { background: rgba(67, 130, 220, .18); }
+.pulse-editor-edit-search-results small { color: #8dbbff; white-space: nowrap; }
+.pulse-editor-edit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.pulse-editor-edit-note > span { margin-left: auto; color: #7f98bd; font-size: 9px; letter-spacing: .1em; }
+.pulse-editor-edit-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 3px; }
+.pulse-editor-edit-actions button { min-height: 42px; padding: 0 16px; border-radius: 11px; font: inherit; font-size: 13px; font-weight: 750; cursor: pointer; transition: transform .15s ease, opacity .15s ease, background .15s ease; }
+.pulse-editor-edit-actions button:hover:not(:disabled) { transform: translateY(-1px); }
+.pulse-editor-edit-actions button:disabled { opacity: .6; cursor: wait; }
+.pulse-editor-edit-actions .pulse-editor-cancel { border: 1px solid rgba(130, 170, 224, .32); color: #d5e2f7; background: rgba(130, 170, 224, .08); }
+.pulse-editor-save-changes { border: 1px solid #3978f5; color: #fff; background: #347df0; box-shadow: 0 5px 18px rgba(59, 130, 246, .35); }
+.pulse-editor-exercise { transition: opacity .16s ease, border-color .16s ease, transform .16s ease; }
+.pulse-editor-exercise.is-dragging { opacity: .42; }
+.pulse-editor-exercise.is-drop-target { border-color: #78aaff; box-shadow: 0 0 0 2px rgba(59, 130, 246, .2); }
+.pulse-editor-grip-button { align-items: center; justify-content: center; min-width: 36px; min-height: 36px; padding: 7px; border: 0; border-radius: 9px; background: transparent; color: inherit; cursor: grab; }
+.pulse-editor-grip-button:active { cursor: grabbing; }
+.pulse-editor-grip-button:focus-visible { outline: 2px solid #78aaff; outline-offset: 2px; }
+@media (max-width: 520px) {
+  .pulse-editor-edit-panel { padding: 15px; gap: 15px; }
+  .pulse-editor-edit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pulse-editor-edit-grid label:last-child { grid-column: 1 / -1; }
+  .pulse-editor-edit-actions { flex-direction: column-reverse; }
+  .pulse-editor-edit-actions button { width: 100%; }
+}

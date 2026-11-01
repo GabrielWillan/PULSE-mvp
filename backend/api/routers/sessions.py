@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from services.session_service import fetch_days
+from services.session_service import create_sesssions, fetch_days
 
 router = APIRouter()
 
@@ -15,3 +15,14 @@ def fetch_routine_days(routine_id: int):
         )
 
     return days_data
+
+
+
+@router.post("/createsession", status_code= status.HTTP_201_CREATED)
+def create_session(day_id:int):
+    new_session = create_sesssions(day_id)
+
+    return new_session
+
+
+
