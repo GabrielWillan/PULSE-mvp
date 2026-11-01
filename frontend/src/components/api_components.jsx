@@ -242,9 +242,49 @@ export async function logSession(
     body:JSON.stringify({sessions_id, exercise_id, sets, reps, weight, rest_time})
   });
 
-  const Data = Response.json();
+  const Data = await Response.json().catch(() => null);
   if(!Response.ok){
-    throw new Error(Data.detail ?? "Cant log current session")
+    const detail = Array.isArray(Data?.detail)
+      ? Data.detail.map((issue) => issue.msg).join("; ")
+      : Data?.detail;
+    throw new Error(detail || "Could not log this set");
   };
+  return Data;
+}
+
+export async function updateSessionLog(
+  log_id,
+  sessions_id,
+  exercise_id,
+  sets,
+  reps,
+  weight,
+  rest_time,
+) {
+  const Response = await fetch(
+    `http://localhost:8000/logsession/${encodeURIComponent(log_id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessions_id,
+        exercise_id,
+        sets,
+        reps,
+        weight,
+        rest_time,
+      }),
+    }
+  );
+
+  const Data = await Response.json().catch(() => null);
+  if (!Response.ok) {
+    const detail = Array.isArray(Data?.detail)
+      ? Data.detail.map((issue) => issue.msg).join("; ")
+      : Data?.detail;
+    throw new Error(detail || "Could not update this set log");
+  }
   return Data;
 }

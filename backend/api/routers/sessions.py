@@ -27,7 +27,7 @@ def create_session(day_id:int):
 @router.post("/logsession",status_code = status.HTTP_202_ACCEPTED)
 def log_session(session:SessionsLogValidator):
     try:
-        log_sessions(
+        new_log = log_sessions(
             session.sessions_id,
             session.exercise_id,
             session.sets,
@@ -35,6 +35,8 @@ def log_session(session:SessionsLogValidator):
             session.weight,
             session.rest_time,
         )
+
+        return new_log
     except KeyError:
         raise KeyError("There is an invalid input ")
     

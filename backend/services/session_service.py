@@ -52,14 +52,16 @@ def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:i
         if session is None:
             raise KeyError("NAHHH")
         
-        db.execute(
+        cursor = db.execute(
             """
             INSERT INTO logsessions(sessions_id, exercise_id, sets, reps, weight, rest_time)
             VALUES(?, ?, ?, ?, ?, ?)
             """,
             (session[0], exercise_id, sets, reps, weight, rest_time )
         )
+        log_id = cursor.lastrowid
         db.commit()
+        return {"log_id":log_id}
 
 def pause_sessions(sessions_id:int):
     with sq.connect("database/main/pulse.db") as db:
