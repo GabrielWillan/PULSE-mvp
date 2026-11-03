@@ -1,5 +1,7 @@
 import sqlite3 as sq
 
+from api.customerror import RoutineIDNotFoundError
+
 DAY_NAMES = ["Day1", "Day2", "Day3", "Day4", "Day5", "Day6", "Day7"]
 
 class CreateRoutine:
@@ -99,6 +101,36 @@ def fetch_all_routines(db_path="database/main/pulse.db"):
         {"id": routine[0], "name": routine[1]}
         for routine in routines
     ]
+
+
+ 
+def rename_routines(routine_id:int, routine_name:str):
+    with sq.connect("database/main/pulse.db") as db:
+        routine = db.execute(
+            """
+            SELECT id 
+            FROM routinebase
+            WHERE id = ?
+            """,
+            (routine_id, )
+        ).fetchone()
+
+        if routine is None:
+            raise RoutineIDNotFoundError(f"Routine id: {routine_id} dosen't exist")
+
+        db.execute(
+            """
+            UPDATE routinebase
+            SET name = ?
+            WHERE id = ?;
+            """,
+            (routine_name, routine[0])
+        )
+        db.commit()
+        
+
+
+
 
 def delete_routines(routine_id: int):
     db = sq.connect("database/main/pulse.db")

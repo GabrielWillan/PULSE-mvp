@@ -1,6 +1,7 @@
 from api.custom_validators import (
     RoutineCreateValidator,
     RoutineidValidator,
+    RoutineNameValidator
 )
 from api.customerror import RoutineIDNotFoundError
 from fastapi import APIRouter, HTTPException, status
@@ -8,6 +9,7 @@ from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
     delete_routines,
+    rename_routines,
     fetch_all_routines,
 )
 
@@ -26,6 +28,20 @@ def create_routinebase(validator:RoutineCreateValidator):
 def fetchall_routine():
    all_routines = fetch_all_routines()
    return all_routines
+
+
+
+@router.patch("/renameroutines", status_code = status.HTTP_202_ACCEPTED)
+def edit_router_name(routine: RoutineNameValidator):
+   try:
+      new_routine = rename_routines(
+         routine.routine_id, 
+         routine.routine_name
+        )
+      return new_routine
+   except KeyError:
+      raise KeyError("Unable to rename your routine")
+
 
 
 @router.delete("/deleteroutine", status_code=status.HTTP_200_OK)

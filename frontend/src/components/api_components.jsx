@@ -24,11 +24,47 @@ export async function getAllRoutines() {
   if (!response.ok) {
     throw new Error(
       Data.detail ?? "Could not fetch routines from API"
-    );
-  }
+    )
+  };
 
   return Data;
 }
+
+export async function renameRoutine(routine_id, routine_name) {
+  const Response = await fetch("http://localhost:8000/deleteroutine",{
+    method:"PATCH",
+    headers:{
+      "Content-Type":"application/json",
+    },
+    body: JSON.stringify({routine_id, routine_name}),
+  });
+
+  const Data = await Response.json();
+  if(!Response.ok){
+    throw new Error(
+      Data.detail ?? "Unable to rename routine"
+    )
+  };
+
+  return Data
+}
+
+export async function deleteRoutine(routine_id) {
+  const Response = await fetch("http://localhost:8000/deleteroutine",{
+    method:"DELETE",
+    headers:{
+      "Content-Type":"application/json",
+    },
+    body:JSON.stringify({routine_id}),
+  });
+
+  const Data = await Response.json();
+  if(!Data.ok){
+    throw new Error("Unable to delete routine")
+  };
+  return Data;
+}
+
 
 
 export async function getAllDays(routine_id) {

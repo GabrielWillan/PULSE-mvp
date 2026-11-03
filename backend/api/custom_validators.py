@@ -7,6 +7,10 @@ class RoutineCreateValidator(BaseModel):
 class RoutineidValidator(BaseModel):
    routine_id:int
 
+class RoutineNameValidator(BaseModel):
+   routine_id:int
+   routine_name:str
+
 class WorkoutAddValidator(BaseModel):
    day_id:int
    exercise_id:int
