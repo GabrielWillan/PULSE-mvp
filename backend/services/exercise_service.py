@@ -2,6 +2,7 @@ import sqlite3 as sq
 
 from api.customerror import (
     DayIDNotFoundError,
+    ExerciseIDNotFoundError,
     RoutineIDNotFoundError,
 )
 
@@ -170,4 +171,44 @@ def edit_workout(day_id:int, exercise_detail_id:int, exercise_id:int, sets:int, 
     )
     db.commit()
     db.close()
+
+
+def delete_workout(day_id:int, exercise_detail_id:int):
+    with sq.connect("database/main/pulse.db") as db:
+        day = db.execute(
+            """
+            SELECT id
+            FROM routinedays
+            WHERE id = ?;
+            """,
+            (day_id, )
+        ).fetchone()
+
+        if day is None:
+            raise DayIDNotFoundError(f"Day id: {day_id} dosen't exist")
+
+        exercise = db.execute(
+            """
+            SELECT id 
+            FROM exercisedetails
+            WHERE id = ?;
+            """,
+            (exercise_detail_id, )
+        ).fetchone()
+
+        if exercise is None:
+            raise ExerciseIDNotFoundError(f"exercise detail id: {exercise_detail_id} dosen't exist")
+        
+        db.execute(
+            """
+            DELETE FROM exercisedetails
+            WHERE id = ? AND day_id = ?;
+            """,
+            (exercise[0], day[0]),
+        )
+        db.commit()
+
+
+
+
     

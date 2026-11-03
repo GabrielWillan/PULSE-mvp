@@ -33,6 +33,10 @@ class WorkoutTitleValidator(BaseModel):
    day_id:int
    workout_title:str | None = None
 
+class WorkoutDeleteValidator(BaseModel):
+   day_id:int
+   exercise_detail_id:int
+
 class SessionsLogValidator(BaseModel):
    sessions_id:int
    exercise_id:int

@@ -2,6 +2,7 @@ from api.custom_validators import (
    WorkoutAddValidator,
    WorkoutEditValidator,
    WorkoutTitleValidator,
+   WorkoutDeleteValidator,
 )
 from fastapi import APIRouter, HTTPException, status
 from services.exercise_service import (
@@ -10,6 +11,7 @@ from services.exercise_service import (
    search_workouts,
    show_workouts,
    update_workout_title,
+   delete_workout,
 )
 
 router = APIRouter()
@@ -67,3 +69,10 @@ def updated_workout_title(workout: WorkoutTitleValidator):
 
    return new_title
 
+
+@router.delete("/deleteexercise", status_code=status.HTTP_200_OK)
+def deleted_exercise(workout:WorkoutDeleteValidator):
+   try:
+      delete_workout(workout.day_id, workout.exercise_detail_id)
+   except KeyError:
+      raise KeyError("Unable to delete this exercise")

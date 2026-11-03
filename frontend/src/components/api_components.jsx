@@ -243,6 +243,23 @@ export async function ReorderWorkoutExercises({ day_id, exercise_detail_ids }) {
 }
 
 
+export async function deleteExercises(day_id, exercise_detail_id) {
+  const Response = await fetch("http://localhost:8000/deleteexercise",{
+    method:"DELETE",
+    headers:{
+      "Content-Type":"application/json",
+    },
+    body:JSON.stringify({day_id, exercise_detail_id}),
+  });
+
+  const Data = await Response.json();
+  if(!Response.ok){
+    throw new Error(Data.detail ?? "Unable to delete exercise")
+  }
+  
+}
+
+
 export async function createSession(day_id) {
   const Response = await fetch(
     `http://localhost:8000/createsession?day_id=${encodeURIComponent(day_id)}`,
