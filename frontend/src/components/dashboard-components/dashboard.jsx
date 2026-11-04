@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAllRoutines, getAllDays, createSession } from "../api_components";
-import { AddWorkout, ShowWorkout, SearchWorkout, UpdateWorkoutTitle, EditWorkout, ReorderWorkoutExercises } from "../api_components";
+import { AddWorkout, ShowWorkout, SearchWorkout, UpdateWorkoutTitle, EditWorkout, ReorderWorkoutExercises, deleteExercises } from "../api_components";
 import { SessionOverview } from "../session_components/session_overview";
 // Route of the routine menu screen (used by "Go back to menu").
 const MENU_ROUTE = "/";
@@ -271,10 +271,13 @@ export function DashBoard() {
   const [workoutTitleInput, setWorkoutTitleInput] = useState("");
   const [titleSaveLoading, setTitleSaveLoading] = useState(false);
   const [titleSaveError, setTitleSaveError] = useState("");
+  const [titleSaveMessage, setTitleSaveMessage] = useState("");
+  const [isEditingWorkoutTitle, setIsEditingWorkoutTitle] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [showAddExerciseForm, setShowAddExerciseForm] = useState(false);
   const [selectedEditorExerciseKey, setSelectedEditorExerciseKey] =
     useState(null);
+  const [isReplacingExerciseKey, setIsReplacingExerciseKey] = useState(null);
   const [exerciseEditDrafts, setExerciseEditDrafts] = useState({});
   const [exerciseRestUnitPreferences, setExerciseRestUnitPreferences] =
     useState(readRestUnitPreferences);
@@ -423,6 +426,7 @@ export function DashBoard() {
   async function handleSaveDayTitle(event) {
     event.preventDefault();
     setTitleSaveError("");
+    setTitleSaveMessage("");
     const dayId = selectedSession?.id ?? selectedSession?.day_id;
     if (dayId == null) {
       setTitleSaveError("The selected routine day has no valid ID.");
@@ -449,14 +453,54 @@ export function DashBoard() {
   }
   function openWorkoutEditor() {
     setModalMode("edit");
+    setWorkoutTitleInput(
+      selectedSession.workoutTitle || selectedSession.title || ""
+    );
+    setTitleSaveError("");
+    setTitleSaveMessage("");
+    setIsEditingWorkoutTitle(false);
+    setIsReplacingExerciseKey(null);
+    setExerciseSearch("");
+    setExerciseResults([]);
+    setSelectedExercise(null);
     setShowAddExerciseForm(false);
     setIsAddWorkoutOpen(true);
     setAddWorkoutError("");
     setAddWorkoutMessage("");
   }
+  async function handleEditWorkoutTitle(event) {
+    event.preventDefault();
+    const dayId = selectedSession?.id ?? selectedSession?.day_id;
+    if (dayId == null) {
+      setTitleSaveError("The selected routine day has no valid ID.");
+      return;
+    }
+
+    const title = workoutTitleInput.trim() || selectedSession.day;
+    try {
+      setTitleSaveLoading(true);
+      setTitleSaveError("");
+      setTitleSaveMessage("");
+      await UpdateWorkoutTitle(Number(dayId), title);
+      const updatedDays = await getAllDays(selectedRoutineId);
+      setRoutineDays(
+        Array.isArray(updatedDays)
+          ? updatedDays
+          : updatedDays?.days ?? updatedDays?.day_names ?? []
+      );
+      setWorkoutTitleInput(title);
+      setTitleSaveMessage("Workout day name saved.");
+      setIsEditingWorkoutTitle(false);
+    } catch (error) {
+      setTitleSaveError(error.message || "Could not save the workout day name.");
+    } finally {
+      setTitleSaveLoading(false);
+    }
+  }
   function closeWorkoutModal() {
     setIsAddWorkoutOpen(false);
     setShowAddExerciseForm(false);
+    setIsReplacingExerciseKey(null);
     setExerciseSearch("");
     setExerciseResults([]);
     setSelectedExercise(null);
@@ -512,7 +556,7 @@ export function DashBoard() {
     const dayKey = String(dayId ?? "");
     const orderedIds = exerciseOrderByDay[dayKey];
 
-    if (!orderedIds) {
+    if (!orderedIds || orderedIds.length === 0) {
       closeWorkoutModal();
       return;
     }
@@ -686,9 +730,56 @@ export function DashBoard() {
       setExerciseSearch("");
       setExerciseResults([]);
       setSelectedExercise(null);
-      setAddWorkoutMessage(`${draft.selectedExercise ? getExerciseName(draft.selectedExercise) : draft.exerciseName} updated successfully.`);
+      setIsReplacingExerciseKey(null);
+      setAddWorkoutMessage("Exercise changes applied.");
     } catch (error) {
       setAddWorkoutError(error.message || "Could not update this exercise.");
+    } finally {
+      setSavingExerciseKey(null);
+    }
+  }
+  async function handleDeleteExercise(exercise, exerciseKey) {
+    const dayId = selectedSession?.id ?? selectedSession?.day_id;
+    const detailId = getExerciseDetailId(exercise);
+    const numericDayId = Number(dayId);
+    const numericDetailId = Number(detailId);
+
+    if (!Number.isInteger(numericDayId) || numericDayId < 1 ||
+      !Number.isInteger(numericDetailId) || numericDetailId < 1) {
+      setAddWorkoutError("Couldn't identify this saved exercise to remove it.");
+      return;
+    }
+
+    try {
+      setSavingExerciseKey(exerciseKey);
+      setAddWorkoutError("");
+      setAddWorkoutMessage("");
+      await deleteExercises(numericDayId, numericDetailId);
+      const updatedDays = await getAllDays(selectedRoutineId);
+      const days = Array.isArray(updatedDays)
+        ? updatedDays
+        : updatedDays?.days ?? updatedDays?.day_names ?? [];
+      setRoutineDays(days);
+      setExerciseEditDrafts((current) => {
+        const next = { ...current };
+        delete next[exerciseKey];
+        return next;
+      });
+      setExerciseOrderByDay((current) => {
+        const dayKey = String(numericDayId);
+        if (!current[dayKey]) return current;
+        return {
+          ...current,
+          [dayKey]: current[dayKey].filter((id) => id !== String(numericDetailId)),
+        };
+      });
+      setSelectedEditorExerciseKey(null);
+      setIsReplacingExerciseKey(null);
+      setExerciseSearch("");
+      setExerciseResults([]);
+      setAddWorkoutMessage("Exercise removed.");
+    } catch (error) {
+      setAddWorkoutError(error.message || "Could not remove this exercise.");
     } finally {
       setSavingExerciseKey(null);
     }
@@ -901,18 +992,25 @@ export function DashBoard() {
     ? getExerciseKey(activeEditorExercise, activeEditorExerciseIndex)
     : null;
   const sessionTotalSets = selectedSession.exercises.reduce(
-    (total, exercise) => {
-      const value = Number(exercise.sets ?? 0);
+    (total, exercise, index) => {
+      const exerciseKey = getExerciseKey(exercise, index);
+      const value = Number(
+        exerciseEditDrafts[exerciseKey]?.sets ?? exercise.sets ?? 0
+      );
       return total + (Number.isFinite(value) ? Math.max(0, value) : 0);
     },
     0
   );
   const estimatedSessionMinutes = Math.round(
-    selectedSession.exercises.reduce((total, exercise) => {
-      const rawSets = Number(exercise.sets ?? 0);
+    selectedSession.exercises.reduce((total, exercise, index) => {
+      const exerciseKey = getExerciseKey(exercise, index);
+      const draft = getExerciseEditDraft(exercise, exerciseKey);
+      const rawSets = Number(draft.sets ?? exercise.sets ?? 0);
       const sets = Number.isFinite(rawSets) ? Math.max(0, rawSets) : 0;
-      const rawRest = Number(exercise.rest_time ?? exercise.restTime ?? 0);
-      const restSeconds = Number.isFinite(rawRest) ? Math.max(0, rawRest) : 0;
+      const rawRest = Number(draft.restTime ?? 0);
+      const restSeconds = Number.isFinite(rawRest)
+        ? Math.max(0, rawRest * (draft.restUnit === "minutes" ? 60 : 1))
+        : 0;
       return total + sets * 100 + Math.max(sets - 1, 0) * restSeconds + 120;
     }, 0) / 60
   );
@@ -1161,7 +1259,7 @@ export function DashBoard() {
                         type="button"
                         onClick={openWorkoutEditor}
                       >
-                        View workout
+                        Edit workout
                       </button>
                       <button
                         className="dashboard-primary-btn"
@@ -1261,39 +1359,125 @@ export function DashBoard() {
                         aria-labelledby="pulse-editor-title"
                       >
                         <header className="session-preview-header">
-                          <div>
+                          <div className="session-preview-header-copy">
                             <div className="session-preview-eyebrow">
-                              WORKOUT EDIT · {selectedSession.day.toUpperCase()}
+                              EDIT WORKOUT · {selectedSession.day.toUpperCase()}
                             </div>
-                            <h2 id="pulse-editor-title">
-                              {selectedSession.workoutTitle || selectedSession.title}
-                            </h2>
-                            <p>
-                              Edit or reorder your exercises before you start.
-                            </p>
+                            <div className="session-preview-title-row">
+                              <h2 id="pulse-editor-title">
+                                {selectedSession.workoutTitle || selectedSession.title}
+                              </h2>
+                              <button
+                                type="button"
+                                className="session-preview-title-edit"
+                                onClick={() => {
+                                  setWorkoutTitleInput(
+                                    selectedSession.workoutTitle || selectedSession.title || ""
+                                  );
+                                  setTitleSaveError("");
+                                  setTitleSaveMessage("");
+                                  setIsEditingWorkoutTitle(true);
+                                }}
+                                aria-expanded={isEditingWorkoutTitle}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="m15 5 4 4M4 20l4.5-1 10.3-10.3a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z" />
+                                </svg>
+                                {isEditingWorkoutTitle ? "Editing name" : "Edit name"}
+                              </button>
+                              {titleSaveMessage && !isEditingWorkoutTitle && (
+                                <span className="session-preview-title-saved" role="status">
+                                  {titleSaveMessage}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            className="session-preview-close"
-                            aria-label="Close workout editor"
-                            onClick={closeWorkoutModal}
-                          >
-                            <CloseIcon />
-                          </button>
+                          <div className="session-preview-header-actions">
+                            <button
+                              type="button"
+                              className="session-preview-close"
+                              aria-label="Close workout editor"
+                              onClick={closeWorkoutModal}
+                            >
+                              <CloseIcon />
+                            </button>
+                          </div>
                         </header>
+                        {isEditingWorkoutTitle && (
+                          <form
+                            id="session-preview-title-form"
+                            className="session-preview-day-title-form"
+                            onSubmit={handleEditWorkoutTitle}
+                          >
+                            <label htmlFor="session-preview-workout-title">
+                              Workout day name
+                            </label>
+                            <div className="session-preview-day-title-controls">
+                              <input
+                                id="session-preview-workout-title"
+                                type="text"
+                                value={workoutTitleInput}
+                                onChange={(event) => {
+                                  setWorkoutTitleInput(event.target.value);
+                                  setTitleSaveError("");
+                                  setTitleSaveMessage("");
+                                }}
+                                placeholder={selectedSession.title || selectedSession.day}
+                                maxLength={80}
+                                autoFocus
+                                required
+                                aria-describedby={
+                                  titleSaveError
+                                    ? "session-preview-title-error"
+                                    : undefined
+                                }
+                              />
+                              <div className="session-preview-title-actions">
+                                <button
+                                  type="button"
+                                  className="session-preview-title-cancel"
+                                  onClick={() => {
+                                    setIsEditingWorkoutTitle(false);
+                                    setWorkoutTitleInput(
+                                      selectedSession.workoutTitle || selectedSession.title || ""
+                                    );
+                                    setTitleSaveError("");
+                                  }}
+                                  disabled={titleSaveLoading}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={titleSaveLoading || !workoutTitleInput.trim()}
+                                >
+                                  {titleSaveLoading ? "Saving…" : "Save name"}
+                                </button>
+                              </div>
+                            </div>
+                            {titleSaveError && (
+                              <p
+                                id="session-preview-title-error"
+                                className="pulse-editor-error"
+                                role="alert"
+                              >
+                                {titleSaveError}
+                              </p>
+                            )}
+                          </form>
+                        )}
                         <div className="session-preview-metrics" aria-label="Workout summary">
                           <div className="session-preview-metric">
-                            <span>Exercises</span>
                             <strong>{selectedSession.exercises.length}</strong>
+                            <span>exercises</span>
                           </div>
                           <div className="session-preview-metric">
-                            <span>Total sets</span>
                             <strong>{sessionTotalSets}</strong>
+                            <span>sets</span>
                           </div>
                           <div className="session-preview-metric">
-                            <span>Est. time</span>
                             <strong>
-                              ~{estimatedSessionMinutes}<small> min</small>
+                              ~{estimatedSessionMinutes} <small>min</small>
                             </strong>
                           </div>
                         </div>
@@ -1308,9 +1492,18 @@ export function DashBoard() {
                               aria-label="Exercises in this workout"
                             >
                               {selectedSession.exercises.map((exercise, index) => {
-                                const exerciseName =
+                                const savedExerciseName =
                                   getExerciseName(exercise) || "Unnamed exercise";
                                 const exerciseKey = getExerciseKey(exercise, index);
+                                const exerciseDraft = exerciseEditDrafts[exerciseKey];
+                                const exerciseName = exerciseDraft?.selectedExercise
+                                  ? getExerciseName(exerciseDraft.selectedExercise) || savedExerciseName
+                                  : savedExerciseName;
+                                const exerciseSets = exerciseDraft?.sets ?? exercise.sets;
+                                const exerciseReps = exerciseDraft?.reps ?? exercise.reps;
+                                const listDraft = getExerciseEditDraft(exercise, exerciseKey);
+                                const listRest = listDraft.restTime ?? "—";
+                                const listRestUnit = listDraft.restUnit === "minutes" ? "min" : "sec";
                                 const isActive =
                                   exerciseKey === activeEditorExerciseKey;
                                 return (
@@ -1347,6 +1540,7 @@ export function DashBoard() {
                                       aria-pressed={isActive}
                                       onClick={() => {
                                         setSelectedEditorExerciseKey(exerciseKey);
+                                        setIsReplacingExerciseKey(null);
                                         setExerciseSearch("");
                                         setExerciseResults([]);
                                         setAddWorkoutError("");
@@ -1359,7 +1553,7 @@ export function DashBoard() {
                                       <span className="session-preview-order-copy">
                                         <strong>{exerciseName}</strong>
                                         <small>
-                                          {exercise.sets ?? "—"} sets · {exercise.reps ?? "—"} reps
+                                          {exerciseSets ?? "—"} sets · {exerciseReps ?? "—"} reps · {listRest} {listRestUnit}
                                         </small>
                                       </span>
                                     </button>
@@ -1417,38 +1611,53 @@ export function DashBoard() {
                             const exerciseKey = activeEditorExerciseKey;
                             const draft = getExerciseEditDraft(exercise, exerciseKey);
                             const matchingResults = exerciseResults;
+                            const isReplacing = isReplacingExerciseKey === exerciseKey;
                             return (
                               <section
                                 className="session-preview-editor-panel pulse-editor-edit-panel"
                                 aria-label={`Edit ${exerciseName}`}
                               >
                                 <p className="session-preview-editor-count">
-                                  Exercise {activeEditorExerciseIndex + 1} of {selectedSession.exercises.length} · Search to replace
+                                  EXERCISE {activeEditorExerciseIndex + 1} OF {selectedSession.exercises.length}
                                 </p>
-                                <div className="pulse-editor-edit-exercise-picker session-preview-name-picker">
-                                  <input
-                                    id={`pulse-edit-exercise-${exerciseKey}`}
-                                    className="session-preview-exercise-name-input"
-                                    type="search"
-                                    autoComplete="off"
-                                    value={draft.exerciseName ?? ""}
-                                    placeholder="Search exercises…"
-                                    aria-label={`Search to change ${exerciseName}`}
-                                    onChange={(event) => {
-                                      const value = event.target.value;
-                                      updateExerciseEditDraft(exercise, exerciseKey, {
-                                        exerciseName: value,
-                                        exerciseId: "",
-                                        selectedExercise: null,
-                                      });
-                                      setExerciseSearch(value);
+                                <div className="session-preview-editor-panel-title">
+                                  <h3>{draft.selectedExercise ? draft.exerciseName : exerciseName}</h3>
+                                  <button
+                                    type="button"
+                                    className="session-preview-replace-button"
+                                    aria-expanded={isReplacing}
+                                    onClick={() => {
+                                      setIsReplacingExerciseKey(isReplacing ? null : exerciseKey);
+                                      setExerciseSearch("");
+                                      setExerciseResults([]);
                                       setSelectedExercise(null);
+                                      setSearchError("");
                                       setAddWorkoutError("");
+                                      setAddWorkoutMessage("");
                                     }}
-                                  />
-                                  {exerciseSearch.trim() &&
-                                    exerciseSearch === draft.exerciseName &&
-                                    matchingResults.length > 0 && (
+                                  >
+                                    {isReplacing ? "Cancel replace" : "Replace"}
+                                  </button>
+                                </div>
+                                {isReplacing && (
+                                  <div className="pulse-editor-edit-exercise-picker session-preview-name-picker">
+                                    <input
+                                      id={`pulse-edit-exercise-${exerciseKey}`}
+                                      className="session-preview-exercise-name-input"
+                                      type="search"
+                                      autoComplete="off"
+                                      value={exerciseSearch}
+                                      placeholder="Search exercises…"
+                                      aria-label={`Search to replace ${exerciseName}`}
+                                      autoFocus
+                                      onChange={(event) => {
+                                        const value = event.target.value;
+                                        setExerciseSearch(value);
+                                        setSelectedExercise(null);
+                                        setAddWorkoutError("");
+                                      }}
+                                    />
+                                    {exerciseSearch.trim() && matchingResults.length > 0 && (
                                       <div
                                         className="pulse-editor-edit-search-results"
                                         role="listbox"
@@ -1470,8 +1679,12 @@ export function DashBoard() {
                                                   exerciseName: resultName,
                                                   selectedExercise: result,
                                                 });
+                                                setIsReplacingExerciseKey(null);
                                                 setExerciseSearch("");
                                                 setExerciseResults([]);
+                                                setAddWorkoutMessage(
+                                                  `${resultName} selected. Apply to save it.`
+                                                );
                                               }}
                                             >
                                               <span>{resultName}</span>
@@ -1481,7 +1694,16 @@ export function DashBoard() {
                                         })}
                                       </div>
                                     )}
-                                </div>
+                                    {exerciseSearch.trim() && searchLoading && (
+                                      <p className="session-preview-search-status" role="status">
+                                        Searching exercises…
+                                      </p>
+                                    )}
+                                    {exerciseSearch.trim() && searchError && (
+                                      <p className="session-preview-search-status is-error" role="alert">{searchError}</p>
+                                    )}
+                                  </div>
+                                )}
                                 <div className="session-preview-editor-fields">
                                   <label className="session-preview-editor-field">
                                     Sets
@@ -1503,33 +1725,37 @@ export function DashBoard() {
                                   </label>
                                   <label className="session-preview-editor-field">
                                     Rest
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      step={(draft.restUnit ?? "seconds") === "minutes" ? "any" : "1"}
-                                      value={draft.restTime}
-                                      onChange={(event) => updateExerciseEditDraft(exercise, exerciseKey, { restTime: event.target.value })}
-                                    />
-                                  </label>
-                                  <label className="session-preview-editor-field">
-                                    Unit
-                                    <select
-                                      value={draft.restUnit ?? "seconds"}
-                                      onChange={(event) => {
-                                        const nextUnit = event.target.value;
-                                        const currentUnit = draft.restUnit ?? "seconds";
-                                        updateExerciseEditDraft(exercise, exerciseKey, {
-                                          restTime: convertRestTimeUnit(draft.restTime, currentUnit, nextUnit),
-                                          restUnit: nextUnit,
-                                        });
-                                      }}
-                                    >
-                                      <option value="minutes">Minutes</option>
-                                      <option value="seconds">Seconds</option>
-                                    </select>
+                                    <div className="session-preview-rest-control">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step={(draft.restUnit ?? "seconds") === "minutes" ? "any" : "1"}
+                                        value={draft.restTime}
+                                        onChange={(event) => updateExerciseEditDraft(exercise, exerciseKey, { restTime: event.target.value })}
+                                      />
+                                      <div className="session-preview-rest-unit" role="group" aria-label="Rest time unit">
+                                        {["minutes", "seconds"].map((unit) => (
+                                          <button
+                                            key={unit}
+                                            type="button"
+                                            aria-pressed={(draft.restUnit ?? "seconds") === unit}
+                                            className={(draft.restUnit ?? "seconds") === unit ? "is-selected" : ""}
+                                            onClick={() => {
+                                              const currentUnit = draft.restUnit ?? "seconds";
+                                              updateExerciseEditDraft(exercise, exerciseKey, {
+                                                restTime: convertRestTimeUnit(draft.restTime, currentUnit, unit),
+                                                restUnit: unit,
+                                              });
+                                            }}
+                                          >
+                                            {unit === "minutes" ? "min" : "sec"}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
                                   </label>
                                   <label className="session-preview-editor-field session-preview-editor-note">
-                                    Exercise note
+                                    Note (optional)
                                     <textarea
                                       rows={3}
                                       value={draft.note ?? ""}
@@ -1538,14 +1764,24 @@ export function DashBoard() {
                                     />
                                   </label>
                                 </div>
-                                <button
-                                  type="button"
-                                  className="pulse-editor-save-changes session-preview-save-exercise"
-                                  disabled={savingExerciseKey === exerciseKey}
-                                  onClick={() => handleSaveExerciseEdit(exercise, exerciseKey)}
-                                >
-                                  {savingExerciseKey === exerciseKey ? "Saving…" : "Save exercise"}
-                                </button>
+                                <div className="session-preview-editor-panel-actions">
+                                  <button
+                                    type="button"
+                                    className="session-preview-remove-exercise"
+                                    disabled={savingExerciseKey === exerciseKey}
+                                    onClick={() => handleDeleteExercise(exercise, exerciseKey)}
+                                  >
+                                    Remove exercise
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="session-preview-apply-exercise"
+                                    disabled={savingExerciseKey === exerciseKey}
+                                    onClick={() => handleSaveExerciseEdit(exercise, exerciseKey)}
+                                  >
+                                    {savingExerciseKey === exerciseKey ? "Applying…" : "Apply"}
+                                  </button>
+                                </div>
                               </section>
                             );
                           })()}

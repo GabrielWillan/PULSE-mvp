@@ -31,37 +31,36 @@ export async function getAllRoutines() {
 }
 
 export async function renameRoutine(routine_id, routine_name) {
-  const Response = await fetch("http://localhost:8000/deleteroutine",{
-    method:"PATCH",
-    headers:{
-      "Content-Type":"application/json",
+  const Response = await fetch("http://localhost:8000/renameroutines", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({routine_id, routine_name}),
+    body: JSON.stringify({ routine_id, routine_name }),
   });
 
-  const Data = await Response.json();
-  if(!Response.ok){
-    throw new Error(
-      Data.detail ?? "Unable to rename routine"
-    )
-  };
+  const Data = await Response.json().catch(() => null);
+  if (!Response.ok) {
+    throw new Error(Data?.detail ?? "Unable to rename routine");
+  }
 
-  return Data
+  return Data;
 }
 
 export async function deleteRoutine(routine_id) {
-  const Response = await fetch("http://localhost:8000/deleteroutine",{
-    method:"DELETE",
-    headers:{
-      "Content-Type":"application/json",
+  const Response = await fetch("http://localhost:8000/deleteroutine", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
     },
-    body:JSON.stringify({routine_id}),
+    body: JSON.stringify({ routine_id }),
   });
 
-  const Data = await Response.json();
-  if(!Data.ok){
-    throw new Error("Unable to delete routine")
-  };
+  const Data = await Response.json().catch(() => null);
+  if (!Response.ok) {
+    throw new Error(Data?.detail ?? "Unable to delete routine");
+  }
+
   return Data;
 }
 
@@ -166,7 +165,8 @@ export async function  UpdateWorkoutTitle(day_id, workout_title) {
 
 export async function EditWorkout({
   day_id,
-  exercise_detaexercise_id,
+  exercise_detail_id,
+  exercise_id,
   sets,
   reps,
   rest_time,
@@ -179,7 +179,8 @@ export async function EditWorkout({
     },
     body: JSON.stringify({
       day_id,
-      exercise_detailexercise_id,
+      exercise_detail_id,
+      exercise_id,
       sets,
       reps,
       rest_time,
@@ -252,11 +253,11 @@ export async function deleteExercises(day_id, exercise_detail_id) {
     body:JSON.stringify({day_id, exercise_detail_id}),
   });
 
-  const Data = await Response.json();
+  const Data = await Response.json().catch(() => null);
   if(!Response.ok){
-    throw new Error(Data.detail ?? "Unable to delete exercise")
+    throw new Error(Data?.detail ?? "Unable to delete exercise")
   }
-  
+  return Data;
 }
 
 

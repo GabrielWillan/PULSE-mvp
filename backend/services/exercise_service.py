@@ -204,7 +204,7 @@ def delete_workout(day_id:int, exercise_detail_id:int):
             DELETE FROM exercisedetails
             WHERE id = ? AND day_id = ?;
             """,
-            (exercise[0], day[0]),
+            (exercise[0], day[0 ]),
         )
         db.commit()
 

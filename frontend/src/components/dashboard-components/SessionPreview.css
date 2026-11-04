@@ -105,6 +105,13 @@
   gap: 20px;
 }
 
+.session-preview-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
 .session-preview-eyebrow {
   margin: 1px 0 11px;
   color: #66a3ff;
@@ -449,9 +456,89 @@
 }
 
 .session-preview-editor > .session-preview-header,
+.session-preview-editor > .session-preview-day-title-form,
 .session-preview-editor > .session-preview-metrics,
 .session-preview-editor > .session-preview-actions {
   flex: 0 0 auto;
+}
+
+.session-preview-day-title-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  margin-top: -3px;
+}
+
+.session-preview-day-title-form > label {
+  color: #afc1dc;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.session-preview-day-title-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  min-width: 0;
+}
+
+.session-preview-day-title-controls input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #29466c;
+  border-radius: 12px;
+  color: #f5f8ff;
+  background: #081426;
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.session-preview-day-title-controls input:focus {
+  border-color: #78aaff;
+  outline: 2px solid rgba(59, 130, 246, 0.28);
+  outline-offset: 1px;
+}
+
+.session-preview-title-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #3978f5;
+  border-radius: 12px;
+  color: #fff;
+  background: #347df0;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.session-preview-title-actions button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.session-preview-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.session-preview-title-actions .session-preview-title-cancel {
+  padding: 0 11px;
+  border-color: rgba(130, 170, 224, 0.28);
+  color: #bdcde5;
+  background: rgba(130, 170, 224, 0.06);
+}
+
+.session-preview-day-title-form .pulse-editor-error,
+.session-preview-day-title-form .pulse-editor-success {
+  margin: 0;
+  font-size: 0.8rem;
 }
 
 .session-preview-editor .session-preview-eyebrow {
@@ -461,6 +548,69 @@
 
 .session-preview-editor .session-preview-header h2 {
   font-size: clamp(1.8rem, 4vw, 2.3rem);
+}
+
+.session-preview-editor .session-preview-header-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  text-align: left;
+}
+
+.session-preview-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 8px 12px;
+  text-align: left;
+}
+
+.session-preview-title-row h2 {
+  min-width: 0;
+}
+
+.session-preview-title-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #91a9ca;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.session-preview-title-edit:hover,
+.session-preview-title-edit[aria-expanded="true"] {
+  color: #c9e0ff;
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(105, 161, 239, 0.22);
+}
+
+.session-preview-title-edit:focus-visible {
+  outline: 2px solid #78aaff;
+  outline-offset: 2px;
+}
+
+.session-preview-title-edit svg {
+  width: 14px;
+  height: 14px;
+}
+
+.session-preview-title-saved {
+  color: #8ce0b5;
+  font-size: 0.72rem;
+  font-weight: 650;
 }
 
 .session-preview-editor .session-preview-header p {
@@ -617,6 +767,10 @@
   gap: 10px;
   margin: 0;
   padding: 15px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(89, 137, 203, 0.55) transparent;
+  scrollbar-width: thin;
   border: 1px solid rgba(100, 142, 197, 0.26);
   border-radius: 22px;
   background: rgba(3, 12, 28, 0.5);
@@ -722,12 +876,16 @@
 }
 
 .session-preview-editor-panel .pulse-editor-save-changes {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
   flex: 0 0 auto;
   width: 100%;
   min-height: 46px;
   margin-top: 0;
   border-radius: 13px;
   font-size: 0.94rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 .session-preview-editor-panel .pulse-editor-save-changes:disabled {
@@ -832,5 +990,638 @@
 
   .session-preview-editor-panel .session-preview-editor-fields {
     gap: 12px;
+  }
+}
+
+/* PDF editor concept: compact summary, scrollable order list, focused editor. */
+.session-preview-backdrop.pulse-workout-editor-backdrop {
+  padding: 20px;
+}
+
+.session-preview-editor {
+  width: min(100%, 1120px);
+  height: min(88vh, 840px);
+  max-height: min(88vh, 840px);
+  gap: 14px;
+  padding: 27px 30px 24px;
+  border-color: rgba(112, 147, 196, 0.32);
+  border-radius: 25px;
+  background: linear-gradient(145deg, #101c31 0%, #091426 100%);
+}
+
+.session-preview-editor .session-preview-header {
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.session-preview-editor .session-preview-header-copy {
+  gap: 0;
+}
+
+.session-preview-editor .session-preview-eyebrow {
+  margin: 2px 0 9px;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+}
+
+.session-preview-editor .session-preview-header h2 {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.08;
+}
+
+.session-preview-editor .session-preview-title-row {
+  width: auto;
+  align-items: center;
+  gap: 8px 13px;
+}
+
+.session-preview-editor .session-preview-title-edit {
+  min-height: 28px;
+  padding: 3px 7px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.session-preview-editor .session-preview-title-edit svg {
+  width: 13px;
+  height: 13px;
+}
+
+.session-preview-editor .session-preview-title-saved {
+  font-size: 0.7rem;
+}
+
+.session-preview-editor .session-preview-header-actions {
+  padding-top: 1px;
+}
+
+.session-preview-editor .session-preview-close {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: 12px;
+}
+
+.session-preview-editor > .session-preview-day-title-form {
+  gap: 5px;
+  margin: 0;
+}
+
+.session-preview-editor .session-preview-day-title-form > label {
+  font-size: 0.72rem;
+}
+
+.session-preview-editor .session-preview-day-title-controls input,
+.session-preview-editor .session-preview-title-actions button {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+}
+
+.session-preview-editor .session-preview-day-title-controls input {
+  padding: 7px 10px;
+}
+
+.session-preview-editor .session-preview-title-actions button {
+  padding: 0 12px;
+}
+
+.session-preview-editor .session-preview-metrics {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.session-preview-editor .session-preview-metric {
+  display: inline-flex;
+  min-height: 0;
+  flex: 0 0 auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  box-sizing: border-box;
+  padding: 6px 11px;
+  border-color: rgba(67, 108, 164, 0.36);
+  border-radius: 999px;
+  background: rgba(5, 15, 31, 0.48);
+  text-align: left;
+}
+
+.session-preview-editor .session-preview-metric strong {
+  display: inline-block;
+  font-size: 0.84rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.session-preview-editor .session-preview-metric > span {
+  color: #9aafd0;
+  font-size: 0.76rem;
+  font-weight: 550;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.session-preview-editor .session-preview-metric small {
+  display: inline-block;
+  margin-left: 2px;
+  font-size: 0.75rem;
+  line-height: 1;
+  vertical-align: baseline;
+}
+
+.session-preview-editor > .session-preview-workspace {
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 22px;
+}
+
+.session-preview-editor .session-preview-section-title {
+  margin: 2px 0 9px;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+}
+
+.session-preview-editor .session-preview-workout-list {
+  gap: 4px;
+  padding: 1px 5px 1px 1px;
+}
+
+.session-preview-editor .session-preview-workspace-row {
+  grid-template-columns: minmax(0, 1fr) 32px;
+  min-height: 59px;
+  padding: 7px 9px;
+  border-radius: 14px;
+}
+
+.session-preview-editor .session-preview-workspace-row.is-active {
+  background: rgba(35, 70, 119, 0.36);
+  border-color: rgba(69, 132, 222, 0.5);
+}
+
+.session-preview-editor .session-preview-exercise-select {
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.session-preview-editor .session-preview-exercise-select .session-preview-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.session-preview-editor .session-preview-order-copy {
+  gap: 2px;
+}
+
+.session-preview-editor .session-preview-order-copy strong {
+  font-size: 0.86rem;
+}
+
+.session-preview-editor .session-preview-order-copy small {
+  font-size: 0.71rem;
+}
+
+.session-preview-editor .pulse-editor-grip-button {
+  width: 31px;
+  min-width: 31px;
+  height: 34px;
+  min-height: 34px;
+}
+
+.session-preview-editor .pulse-editor-add-exercise {
+  min-height: 40px;
+  margin-top: 9px;
+  padding: 0 11px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+}
+
+.session-preview-editor .session-preview-editor-panel {
+  gap: 11px;
+  padding: 19px;
+  overflow: visible;
+  border-color: rgba(74, 115, 173, 0.34);
+  border-radius: 19px;
+  background: linear-gradient(155deg, rgba(7, 19, 38, 0.9), rgba(5, 15, 31, 0.76));
+}
+
+.session-preview-editor .session-preview-editor-count {
+  color: #77aaff;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.session-preview-editor-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.session-preview-editor .session-preview-editor-panel-title h3 {
+  min-width: 0;
+  margin: 0;
+  color: #f6f8ff;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.session-preview-replace-button {
+  flex: 0 0 auto;
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid rgba(86, 141, 217, 0.4);
+  border-radius: 9px;
+  color: #a9caff;
+  background: rgba(39, 83, 144, 0.16);
+  font: inherit;
+  font-size: 0.77rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.session-preview-replace-button:hover,
+.session-preview-replace-button[aria-expanded="true"] {
+  border-color: rgba(106, 164, 245, 0.7);
+  color: #e0ecff;
+  background: rgba(44, 102, 181, 0.27);
+}
+
+.session-preview-replace-button:focus-visible,
+.session-preview-rest-unit button:focus-visible,
+.session-preview-remove-exercise:focus-visible,
+.session-preview-apply-exercise:focus-visible {
+  outline: 2px solid #78aaff;
+  outline-offset: 2px;
+}
+
+.session-preview-editor .session-preview-name-picker {
+  margin: 0;
+}
+
+.session-preview-editor .session-preview-name-picker input {
+  min-height: 40px;
+  padding: 8px 11px;
+  border-color: #2e4d75;
+  border-radius: 10px;
+  background: #081426;
+  font-size: 0.88rem;
+}
+
+.session-preview-editor .session-preview-name-picker .pulse-editor-edit-search-results {
+  top: calc(100% + 4px);
+}
+
+.session-preview-search-status {
+  margin: 0;
+  color: #9aafd0;
+  font-size: 0.75rem;
+}
+
+.session-preview-search-status.is-error {
+  color: #f0a0a7;
+}
+
+.session-preview-editor .session-preview-editor-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.session-preview-editor .session-preview-editor-field {
+  gap: 5px;
+  font-size: 0.76rem;
+}
+
+.session-preview-editor .session-preview-editor-field input,
+.session-preview-editor .session-preview-editor-field textarea {
+  min-height: 40px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.session-preview-rest-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+
+.session-preview-editor .session-preview-rest-control input {
+  min-width: 0;
+}
+
+.session-preview-rest-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #29466c;
+  border-radius: 10px;
+  background: rgba(8, 20, 38, 0.9);
+}
+
+.session-preview-rest-unit button {
+  min-width: 38px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 7px;
+  color: #9aafd0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.71rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.session-preview-rest-unit button.is-selected {
+  color: #f5f8ff;
+  background: #24497b;
+}
+
+.session-preview-editor .session-preview-editor-note > span {
+  color: #8099bd;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.session-preview-editor .session-preview-editor-field textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.session-preview-editor-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.session-preview-remove-exercise,
+.session-preview-apply-exercise {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.session-preview-remove-exercise {
+  border: 1px solid rgba(220, 92, 105, 0.34);
+  color: #f18b95;
+  background: rgba(90, 29, 42, 0.18);
+}
+
+.session-preview-remove-exercise:hover:not(:disabled) {
+  border-color: rgba(243, 111, 125, 0.7);
+  background: rgba(121, 38, 53, 0.32);
+}
+
+.session-preview-apply-exercise {
+  min-width: 106px;
+  border: 1px solid #347df0;
+  color: #fff;
+  background: #347df0;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.22);
+}
+
+.session-preview-apply-exercise:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #478cff;
+}
+
+.session-preview-remove-exercise:disabled,
+.session-preview-apply-exercise:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.session-preview-editor > .session-preview-actions {
+  gap: 12px;
+  padding-top: 0;
+}
+
+.session-preview-editor .session-preview-actions button {
+  min-height: 47px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+}
+
+.session-preview-editor .session-preview-actions .session-preview-start {
+  box-shadow: 0 8px 20px rgba(35, 111, 245, 0.2);
+}
+
+.session-preview-editor > .pulse-editor-success,
+.session-preview-editor > .pulse-editor-error {
+  flex: 0 0 auto;
+  margin: -5px 0 0;
+  font-size: 0.78rem;
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .session-preview-editor {
+    height: 94vh;
+    max-height: 94vh;
+    gap: 10px;
+    padding: 19px 24px 18px;
+  }
+
+  .session-preview-editor .session-preview-editor-panel {
+    gap: 8px;
+    padding: 13px 15px;
+  }
+
+  .session-preview-editor .session-preview-editor-field textarea {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 760px) {
+  .session-preview-backdrop.pulse-workout-editor-backdrop {
+    padding: 12px;
+  }
+
+  .session-preview-editor {
+    width: min(100%, 680px);
+    height: auto;
+    max-height: none;
+    gap: 15px;
+    padding: 23px;
+    overflow: visible;
+  }
+
+  .session-preview-editor > .session-preview-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .session-preview-editor .session-preview-order {
+    height: auto;
+  }
+
+  .session-preview-editor .session-preview-workout-list {
+    flex: 0 1 250px;
+    max-height: 250px;
+  }
+
+  .session-preview-editor .session-preview-editor-panel {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 520px) {
+  .session-preview-editor {
+    padding: 20px 16px 16px;
+  }
+
+  .session-preview-editor .session-preview-title-row {
+    gap: 5px 8px;
+  }
+
+  .session-preview-editor .session-preview-header h2 {
+    font-size: 1.55rem;
+  }
+
+  .session-preview-editor .session-preview-title-edit {
+    font-size: 0.68rem;
+  }
+
+  .session-preview-editor .session-preview-metrics {
+    gap: 6px;
+  }
+
+  .session-preview-editor .session-preview-metric {
+    padding: 5px 8px;
+  }
+
+  .session-preview-editor .session-preview-metric strong,
+  .session-preview-editor .session-preview-metric > span {
+    font-size: 0.7rem;
+  }
+
+  .session-preview-editor .session-preview-editor-panel {
+    padding: 15px;
+  }
+
+  .session-preview-editor .session-preview-editor-fields {
+    gap: 9px;
+  }
+
+  .session-preview-editor > .session-preview-actions {
+    gap: 8px;
+  }
+
+  .session-preview-editor .session-preview-actions button {
+    min-height: 43px;
+    padding: 7px 9px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Keep the exercise editor compact enough to show the full form at once. */
+.session-preview-editor .session-preview-editor-panel {
+  gap: 8px;
+  padding: 14px;
+}
+
+.session-preview-editor .session-preview-editor-count {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+}
+
+.session-preview-editor .session-preview-editor-panel-title h3 {
+  font-size: clamp(1rem, 1.8vw, 1.28rem);
+}
+
+.session-preview-editor .session-preview-replace-button {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 0.72rem;
+}
+
+.session-preview-editor .session-preview-name-picker input {
+  min-height: 36px;
+  padding: 6px 9px;
+  font-size: 0.82rem;
+}
+
+.session-preview-editor .session-preview-editor-fields {
+  gap: 7px 9px;
+}
+
+.session-preview-editor .session-preview-editor-field {
+  gap: 3px;
+  font-size: 0.72rem;
+}
+
+.session-preview-editor .session-preview-editor-field input,
+.session-preview-editor .session-preview-editor-field textarea {
+  min-height: 35px;
+  padding: 6px 9px;
+  font-size: 0.84rem;
+}
+
+.session-preview-editor .session-preview-editor-field textarea {
+  min-height: 48px;
+}
+
+.session-preview-editor .session-preview-rest-control {
+  gap: 4px;
+}
+
+.session-preview-editor .session-preview-rest-unit {
+  gap: 1px;
+  padding: 2px;
+  border-radius: 9px;
+}
+
+.session-preview-editor .session-preview-rest-unit button {
+  min-width: 33px;
+  padding: 0 5px;
+  font-size: 0.66rem;
+}
+
+.session-preview-editor .session-preview-editor-panel-actions {
+  gap: 8px;
+  padding-top: 0;
+}
+
+.session-preview-editor .session-preview-remove-exercise,
+.session-preview-editor .session-preview-apply-exercise {
+  min-height: 35px;
+  padding: 0 11px;
+  font-size: 0.76rem;
+}
+
+.session-preview-editor .session-preview-apply-exercise {
+  min-width: 88px;
+}
+
+@media (max-height: 820px) and (min-width: 761px) {
+  .session-preview-editor .session-preview-editor-panel {
+    gap: 7px;
+    padding: 12px;
+  }
+
+  .session-preview-editor .session-preview-editor-field textarea {
+    min-height: 42px;
   }
 }

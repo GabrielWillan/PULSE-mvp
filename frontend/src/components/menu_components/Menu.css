@@ -106,13 +106,14 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 22px;
   background: var(--glass);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
 .routines-group li { position: relative; }
+.routines-card.is-open { position: relative; z-index: 8; }
 .routines-group li + li::before {
   content: "";
   position: absolute;
@@ -121,17 +122,96 @@
   background: var(--sep);
 }
 .routines-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  width: 100%; padding: 22px;
-  border: 0; background: transparent; color: inherit;
-  font: inherit; font-size: 19px; font-weight: 500; text-align: left;
-  cursor: pointer; transition: background 0.15s;
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 78px; padding: 8px 12px 8px 22px;
+  background: transparent; color: inherit;
+  border-radius: 18px;
+  transition: background 0.15s;
 }
-.routines-row:hover { background: rgba(255, 255, 255, 0.08); }
-.routines-row:active { background: rgba(255, 255, 255, 0.14); }
-.routines .routines-row:focus-visible { outline: 2px solid var(--icon); outline-offset: -2px; }
+.routines-row:hover,
+.routines-row.is-open { background: rgba(255, 255, 255, 0.055); }
+.routines-row-main {
+  display: flex; flex: 1 1 auto; align-items: center;
+  min-width: 0; min-height: 58px; padding: 8px 0;
+  border: 0; background: transparent; color: inherit;
+  border-radius: 12px;
+  font: inherit; font-size: 19px; font-weight: 500; text-align: left;
+  cursor: pointer;
+}
+.routines-row-main:active { color: #d9e7ff; }
+.routines .routines-row-main:focus-visible,
+.routines .routines-row-chevron:focus-visible { outline: 2px solid var(--icon); outline-offset: 2px; }
 .routines-row-name { min-width: 0; overflow-wrap: anywhere; }
-.routines-row-chevron { flex: none; display: grid; color: var(--chev); }
+.routines-row-chevron {
+  flex: none; display: grid; place-items: center;
+  width: 44px; height: 44px; padding: 0;
+  border: 1px solid transparent; border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04); color: var(--chev);
+  cursor: pointer; transition: color 0.16s, background 0.16s, border-color 0.16s;
+}
+.routines-row-chevron:hover,
+.routines-row.is-open .routines-row-chevron {
+  color: #c7e1ff; background: rgba(0, 113, 227, 0.2); border-color: rgba(91, 162, 255, 0.35);
+}
+.routines-row-chevron svg { transition: transform 0.2s ease; }
+.routines-row.is-open .routines-row-chevron svg { transform: rotate(90deg); }
+
+.routines-action-menu {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% - 12px);
+  right: 56px;
+  width: min(264px, calc(100vw - 80px));
+  padding: 5px;
+  overflow: hidden;
+  color: #f2f5fd;
+  background: rgba(43, 53, 73, 0.97);
+  border: 1px solid rgba(160, 177, 205, 0.32);
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.46), inset 0 1px rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+  transform-origin: top right;
+  animation: routine-menu-in 150ms ease-out both;
+}
+.routines-action-menu-item {
+  display: flex; align-items: center; gap: 15px;
+  width: 100%; min-height: 52px; padding: 0 15px;
+  color: #f0f4fc; background: transparent; border: 0; border-radius: 12px;
+  font: inherit; font-size: 16px; font-weight: 500; text-align: left;
+  cursor: pointer; transition: background 0.14s, color 0.14s;
+}
+.routines-action-menu-item svg { flex: none; width: 20px; height: 20px; color: #dce6f7; }
+.routines-action-menu-item:hover { background: rgba(255, 255, 255, 0.08); }
+.routines-action-menu-item.is-danger { color: #f0f3fa; }
+.routines-action-menu-item.is-danger svg { color: #fa6677; }
+.routines-action-menu-item.is-danger:hover { background: rgba(224, 65, 83, 0.13); }
+.routines-action-menu-divider { height: 1px; margin: 1px 4px; background: rgba(207, 218, 236, 0.2); }
+.routines-action-error {
+  margin: 0; color: #ff9ba5; font-size: 13px; line-height: 1.45;
+}
+.routines-action-notice {
+  position: fixed; z-index: 1100; left: 50%; bottom: max(24px, env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: 10px; transform: translateX(-50%);
+  padding: 13px 18px; color: #eaf3ff; background: rgba(20, 38, 71, 0.94);
+  border: 1px solid rgba(102, 159, 236, 0.35); border-radius: 999px;
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.38); backdrop-filter: blur(18px);
+  font-size: 14px; font-weight: 600; animation: routine-toast-in 180ms ease-out both;
+}
+.routines-action-notice span {
+  display: grid; width: 30px; height: 30px; place-items: center; flex: none;
+  color: white; background: linear-gradient(135deg, #54adff, #0878ed);
+  border-radius: 50%; box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
+}
+
+@keyframes routine-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes routine-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
 /* right: empty state, same material as the list */
 .routines-empty {
@@ -275,6 +355,20 @@
     cursor: pointer;
 }
 
+.routine-delete-modal .routine-delete-mark {
+  display: grid; width: 42px; height: 42px; place-items: center;
+  margin-bottom: 16px; color: #ff9ca7;
+  background: rgba(218, 63, 81, 0.15); border: 1px solid rgba(255, 115, 130, 0.28);
+  border-radius: 13px; font-size: 20px; font-weight: 800;
+}
+.routine-delete-modal h2 { overflow-wrap: anywhere; }
+.routine-delete-confirm {
+  color: #fff; background: #b83d50; border: 1px solid #d95769;
+}
+.routine-delete-confirm:hover:not(:disabled) { background: #cf465a; }
+.routine-delete-confirm:disabled,
+.routine-modal-close:disabled { cursor: wait; opacity: 0.6; }
+
 .routine-cancel {
     color: #d5dced;
     background: rgba(255, 255, 255, 0.06);
@@ -308,4 +402,8 @@
   .routines-side { position: static; width: 100%; }
   .routines-side h1 { margin-bottom: 20px; }
   .routines-create { width: 100%; }
+  .routines-row { padding: 7px 8px 7px 16px; }
+  .routines-row-main { font-size: 17px; }
+  .routines-action-menu { right: 52px; width: min(264px, calc(100vw - 76px)); }
+  .routines-action-notice { width: max-content; max-width: calc(100vw - 28px); font-size: 13px; }
 }
