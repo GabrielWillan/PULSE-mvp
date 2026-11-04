@@ -62,6 +62,26 @@ def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:i
         log_id = cursor.lastrowid
         db.commit()
         return {"log_id":log_id}
+    
+
+
+def show_log_sessions():
+    with sq.connect("database/main/pulse.db") as db:
+        logs = db.execute(
+            """
+            SELECT id, 
+            sessions_id, 
+            exercise_id, 
+            sets, 
+            reps, 
+            weight, 
+            rest_time
+            FROM logsessions;
+            """
+        ).fetchall()
+        db.commit()
+
+        return {"logged_sessions": [dict(log) for log in logs]}
 
 def pause_sessions(sessions_id:int):
     with sq.connect("database/main/pulse.db") as db:

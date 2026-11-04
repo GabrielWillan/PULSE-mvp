@@ -256,6 +256,7 @@ export function DashBoard() {
   const [routinesLoading, setRoutinesLoading] = useState(true);
   const [routinesError, setRoutinesError] = useState("");
   const [routineDays, setRoutineDays] = useState([]);
+  const [restDayOverrides, setRestDayOverrides] = useState({});
   const [daysLoading, setDaysLoading] = useState(false);
   const [daysError, setDaysError] = useState("");
   const [workouts, setWorkouts] = useState([]);
@@ -421,6 +422,19 @@ export function DashBoard() {
     setWorkoutTitleInput("");
     setTitleSaveError("");
     setShowDayTitleForm(true);
+  }
+
+  function toggleSelectedRestDay() {
+    const dayKey = String(
+      selectedSession?.id ??
+      selectedSession?.day?.toLowerCase().replace(/\s+/g, "-") ??
+      ""
+    );
+    if (!dayKey) return;
+    setRestDayOverrides((current) => ({
+      ...current,
+      [dayKey]: !selectedSession.isRestDay,
+    }));
   }
 
   async function handleSaveDayTitle(event) {
@@ -845,6 +859,10 @@ export function DashBoard() {
       setSelectedExercise(null);
       setWorkoutNote("");
       await refreshWorkouts();
+      setRestDayOverrides((current) => ({
+        ...current,
+        [String(dayId)]: false,
+      }));
       if (selectedRoutineId) {
         const updatedDays = await getAllDays(selectedRoutineId);
         const days = Array.isArray(updatedDays)
@@ -892,6 +910,9 @@ export function DashBoard() {
     routines.find(
       (routine) => routine.id === selectedRoutineId
     ) ?? null;
+  useEffect(() => {
+    setRestDayOverrides({});
+  }, [selectedRoutineId]);
   useEffect(() => {
     let isMounted = true;
     async function fetchDays() {
@@ -947,7 +968,17 @@ export function DashBoard() {
             (rightIndex < 0 ? savedLocalOrder.length : rightIndex);
         })
       : baseExercises;
-    const isRestDay = apiDay?.is_rest_day === true;
+    const restDayKey = String(
+      apiDay?.day_id ??
+      apiDay?.id ??
+      day.toLowerCase().replace(/\s+/g, "-")
+    );
+    const isRestDay = Object.prototype.hasOwnProperty.call(
+      restDayOverrides,
+      restDayKey
+    )
+      ? restDayOverrides[restDayKey]
+      : apiDay?.is_rest_day === true;
     const savedWorkoutTitle = String(apiDay?.workout_title ?? "").trim();
     let title = savedWorkoutTitle || day;
     let description = "No workout assigned yet.";
@@ -973,13 +1004,22 @@ export function DashBoard() {
       description,
       exercises,
       isRestDay,
-      hasWorkout: exercises.length > 0,
+      hasWorkout: !isRestDay && exercises.length > 0,
       completed: false,
     };
   });
   const selectedSession =
     weeklyTraining.find((day) => day.day === selectedDay) ??
     weeklyTraining[0];
+  const selectedRestDayOverrideKey = String(
+    selectedSession?.id ??
+    selectedSession?.day?.toLowerCase().replace(/\s+/g, "-") ??
+    ""
+  );
+  const isRestDayPreviewOnly = Object.prototype.hasOwnProperty.call(
+    restDayOverrides,
+    selectedRestDayOverrideKey
+  );
   const matchingEditorExerciseIndex = selectedSession.exercises.findIndex(
     (exercise, index) =>
       getExerciseKey(exercise, index) === selectedEditorExerciseKey
@@ -1229,7 +1269,9 @@ export function DashBoard() {
                 <h2 className="session-card-title">
                   {daysLoading
                     ? "Loading routine day..."
-                    : selectedSession.workoutTitle || selectedSession.title}
+                    : selectedSession.isRestDay
+                      ? "Rest day"
+                      : selectedSession.workoutTitle || selectedSession.title}
                 </h2>
                 <p className="session-card-description">
                   {routinesLoading
@@ -1331,12 +1373,26 @@ export function DashBoard() {
                       </button>
                       <button
                         type="button"
+                        className={`rest-day-form-action${selectedSession.isRestDay ? " is-active" : ""}`}
+                        aria-pressed={selectedSession.isRestDay}
+                        disabled={titleSaveLoading}
+                        onClick={toggleSelectedRestDay}
+                      >
+                        {selectedSession.isRestDay ? "Undo rest day" : "Mark rest day"}
+                      </button>
+                      <button
+                        type="button"
                         className="pulse-editor-cancel"
                         onClick={() => setShowDayTitleForm(false)}
                       >
                         Cancel
                       </button>
                     </div>
+                    {selectedSession.isRestDay && isRestDayPreviewOnly && (
+                      <p className="rest-day-form-note" role="status">
+                        Temporary preview · not saved yet
+                      </p>
+                    )}
                   </form>
                 </div>
               )}
@@ -1590,18 +1646,33 @@ export function DashBoard() {
                                 );
                               })}
                             </div>
-                            <button
-                              className="pulse-editor-add-exercise"
-                              type="button"
-                              onClick={() => {
-                                setShowAddExerciseForm(true);
-                                setAddWorkoutError("");
-                                setAddWorkoutMessage("");
-                              }}
-                            >
-                              <AddIcon />
-                              Add exercise
-                            </button>
+                            <div className="session-preview-order-actions">
+                              <button
+                                className="pulse-editor-add-exercise"
+                                type="button"
+                                onClick={() => {
+                                  setShowAddExerciseForm(true);
+                                  setAddWorkoutError("");
+                                  setAddWorkoutMessage("");
+                                }}
+                              >
+                                <AddIcon />
+                                Add exercise
+                              </button>
+                              <button
+                                className={`session-preview-rest-day-action${selectedSession.isRestDay ? " is-active" : ""}`}
+                                type="button"
+                                aria-pressed={selectedSession.isRestDay}
+                                onClick={toggleSelectedRestDay}
+                              >
+                                {selectedSession.isRestDay ? "Undo rest day" : "Mark rest day"}
+                              </button>
+                            </div>
+                            {selectedSession.isRestDay && isRestDayPreviewOnly && (
+                              <p className="rest-day-form-note" role="status">
+                                Temporary preview · not saved yet
+                              </p>
+                            )}
                           </section>
 
                           {activeEditorExercise && (() => {
@@ -1999,6 +2070,19 @@ export function DashBoard() {
                           </button>
                           <button
                             type="button"
+                            className={`rest-day-form-action${selectedSession.isRestDay ? " is-active" : ""}`}
+                            aria-pressed={selectedSession.isRestDay}
+                            disabled={addWorkoutLoading}
+                            onClick={() => {
+                              setAddWorkoutError("");
+                              setAddWorkoutMessage("");
+                              toggleSelectedRestDay();
+                            }}
+                          >
+                            {selectedSession.isRestDay ? "Undo rest day" : "Mark rest day"}
+                          </button>
+                          <button
+                            type="button"
                             className="pulse-editor-cancel"
                             onClick={() => {
                               if (modalMode === "edit") {
@@ -2016,6 +2100,11 @@ export function DashBoard() {
                             Cancel
                           </button>
                         </div>
+                        {selectedSession.isRestDay && isRestDayPreviewOnly && (
+                          <p className="rest-day-form-note" role="status">
+                            Temporary preview · not saved yet
+                          </p>
+                        )}
                       </form>
                     )}
                     {modalMode === "edit" && showAddExerciseForm && (
@@ -2174,12 +2263,30 @@ export function DashBoard() {
                             </button>
                             <button
                               type="button"
+                              className={`rest-day-form-action${selectedSession.isRestDay ? " is-active" : ""}`}
+                              aria-pressed={selectedSession.isRestDay}
+                              disabled={addWorkoutLoading}
+                              onClick={() => {
+                                setAddWorkoutError("");
+                                setAddWorkoutMessage("");
+                                toggleSelectedRestDay();
+                              }}
+                            >
+                              {selectedSession.isRestDay ? "Undo rest day" : "Mark rest day"}
+                            </button>
+                            <button
+                              type="button"
                               className="pulse-editor-cancel"
                               onClick={() => setShowAddExerciseForm(false)}
                             >
                               Cancel
                             </button>
                           </div>
+                          {selectedSession.isRestDay && isRestDayPreviewOnly && (
+                            <p className="rest-day-form-note" role="status">
+                              Temporary preview · not saved yet
+                            </p>
+                          )}
                         </form>
                       </div>
                     )}

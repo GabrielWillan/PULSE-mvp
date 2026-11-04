@@ -1078,6 +1078,45 @@
   font-size: 0.84rem;
 }
 
+.session-preview-order-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.session-preview-editor .session-preview-order-actions .pulse-editor-add-exercise {
+  margin-top: 0;
+}
+
+.session-preview-rest-day-action {
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px dashed rgba(78, 127, 193, 0.5);
+  border-radius: 12px;
+  color: #a9c5eb;
+  background: rgba(3, 12, 28, 0.3);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.session-preview-rest-day-action:hover,
+.session-preview-rest-day-action.is-active {
+  border-color: rgba(115, 168, 244, 0.65);
+  color: #e2eeff;
+  background: rgba(49, 94, 153, 0.22);
+}
+
+.session-preview-rest-day-action:focus-visible,
+.rest-day-form-action:focus-visible {
+  outline: 2px solid #78aaff;
+  outline-offset: 2px;
+}
+
 .session-preview-editor .session-preview-day-title-controls input {
   padding: 7px 10px;
 }

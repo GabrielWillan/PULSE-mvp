@@ -429,6 +429,41 @@
   gap: 12px;
 }
 
+.rest-day-form-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid rgba(111, 151, 207, 0.38);
+  border-radius: 11px;
+  color: #a9c5eb;
+  background: rgba(7, 20, 41, 0.5);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.rest-day-form-action:hover:not(:disabled),
+.rest-day-form-action.is-active {
+  border-color: rgba(115, 168, 244, 0.65);
+  color: #e2eeff;
+  background: rgba(49, 94, 153, 0.22);
+}
+
+.rest-day-form-action:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.rest-day-form-note {
+  margin: -4px 0 0;
+  color: #8da5c9;
+  font-size: 12px;
+}
+
 .pulse-editor-cancel {
   padding: 10px 16px;
   color: #e2eaf7;
