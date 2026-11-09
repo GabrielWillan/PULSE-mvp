@@ -1,5 +1,7 @@
 import sqlite3 as sq
 
+from api.customerror import RoutineIDNotFoundError
+
 
 def create_sesssions(day_id:int):
        db = sq.connect("database/main/pulse.db")
@@ -50,7 +52,8 @@ def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:i
             (sessions_id, )
         ).fetchone()
         if session is None:
-            raise KeyError("NAHHH")
+            raise KeyError("Session is not available")
+        
         
         cursor = db.execute(
             """
@@ -65,23 +68,60 @@ def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:i
     
 
 
-def show_log_sessions():
+def show_log_sessions(routine_id:int):
     with sq.connect("database/main/pulse.db") as db:
+        db.row_factory = sq.Row
+
+        routine = db.execute(
+            """
+            SELECT id
+            FROM routinebase
+            WHERE id = ?;
+            """,
+            (routine_id, )
+        ).fetchone()
+
+        if routine is None:
+            raise RoutineIDNotFoundError(f"Routine id {routine_id} dosen't exist")
+
+        db.execute(
+            """
+            SELECT
+            sess.id,
+            log.sessions_id,
+            log.exercise_id,
+            log.sets,
+            log.reps,
+            log.weight,
+            log.rest_time
+            FROM sessions AS sess
+            JOIN logsessions AS log
+            ON log.sessions_id = sess.id
+            """
+        ).fetchone()
+
         logs = db.execute(
             """
-            SELECT id, 
-            sessions_id, 
-            exercise_id, 
-            sets, 
-            reps, 
-            weight, 
-            rest_time
-            FROM logsessions;
-            """
+            SELECT
+            log.id,
+            log.sessions_id,
+            log.exercise_id,
+            log.sets,
+            log.reps,
+            log.weight,
+            log.rest_time
+            FROM sessions AS sess
+            JOIN logsessions AS log
+            ON log.sessions_id = sess.id
+            JOIN routinedays AS rd
+            ON sess.day_id = rd.id
+            WHERE rd.routine_id = ? 
+            """,
+            (routine_id, )
         ).fetchall()
         db.commit()
 
-        return {"logged_sessions": [dict(log) for log in logs]}
+        return{"logged_sessions": [dict(log) for log in logs]}
 
 def pause_sessions(sessions_id:int):
     with sq.connect("database/main/pulse.db") as db:
@@ -110,15 +150,17 @@ def resume_sessions(sessions_id:int):
 
 def end_sessions(sessions_id:int):
     with sq.connect("database/main/pulse.db") as db:
-        db.execute(
+        end_at = db.execute(
             """
-            UPDATE sessions
-            SET ended_at = CURRENT_TIMESTAMP
+            SELECT ended_at
+            FROM sessions
             WHERE id = ?
             """,
-            (sessions_id,)
-        )
-        db.commit()
+            (sessions_id, )
+        ).fetchone()
+
+
+        return {"Ended_at": end_at}
 
 def fetch_days(routine_id: int):
     with sq.connect("database/main/pulse.db") as db:

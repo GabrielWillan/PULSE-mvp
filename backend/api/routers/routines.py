@@ -1,7 +1,7 @@
 from api.custom_validators import (
     RoutineCreateValidator,
     RoutineidValidator,
-    RoutineNameValidator
+    RoutineNameValidator,
 )
 from api.customerror import RoutineIDNotFoundError
 from fastapi import APIRouter, HTTPException, status
@@ -9,8 +9,8 @@ from services.routine_service import (
     CreateRoutine,
     FetchRoutine,
     delete_routines,
-    rename_routines,
     fetch_all_routines,
+    rename_routines,
 )
 
 router = APIRouter()

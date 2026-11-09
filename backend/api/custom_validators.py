@@ -44,3 +44,6 @@ class SessionsLogValidator(BaseModel):
    reps:int
    weight:float
    rest_time:int
+
+class SessionEndValidator(BaseModel):
+   sessions_id:int
