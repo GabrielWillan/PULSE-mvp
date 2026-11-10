@@ -1,0 +1,1213 @@
+.training-log-page {
+  --log-text: #eaf1ff;
+  --log-muted: #8aa0c8;
+  --log-accent: #3b82f6;
+  --log-accent-light: #6aa8ff;
+  --log-glass: rgba(14, 29, 59, 0.78);
+  --log-glass-deep: rgba(5, 14, 31, 0.68);
+  --log-border: rgba(48, 83, 145, 0.45);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  color: var(--log-text);
+  color-scheme: dark;
+  background:
+    radial-gradient(ellipse at 15% 2%, rgba(33, 91, 189, 0.2), transparent 32%),
+    radial-gradient(ellipse at 90% 7%, rgba(35, 124, 184, 0.12), transparent 28%),
+    linear-gradient(180deg, #0e2b60 0, #08142b 390px, #050d1c 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    system-ui, Inter, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.training-log-page *,
+.training-log-page *::before,
+.training-log-page *::after {
+  box-sizing: border-box;
+}
+
+.training-log-page button,
+.training-log-page select {
+  font: inherit;
+}
+
+.training-log-shell {
+  width: 100%;
+  max-width: 1600px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(clamp(20px, 4vh, 36px), env(safe-area-inset-top)) clamp(20px, 4vw, 58px) max(clamp(24px, 5vh, 44px), env(safe-area-inset-bottom));
+}
+
+.training-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.training-log-brand-group,
+.training-log-brand {
+  display: flex;
+  align-items: center;
+}
+
+.training-log-brand-group {
+  gap: 16px;
+}
+
+.training-log-brand {
+  gap: 10px;
+  color: #f5f8ff;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+}
+
+.training-log-menu-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 0;
+  color: var(--log-text);
+  background: rgba(14, 29, 59, 0.8);
+  border: 1px solid rgba(48, 83, 145, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(1, 8, 23, 0.22);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.training-log-menu-button:hover {
+  transform: translateY(-1px);
+  background: rgba(34, 70, 132, 0.75);
+  border-color: rgba(105, 164, 255, 0.48);
+}
+
+.training-log-menu-button svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.training-log-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(145deg, #65aaff, #347bf3);
+  border-radius: 11px;
+  box-shadow: 0 8px 20px rgba(47, 119, 245, 0.28);
+}
+
+.training-log-mark svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.training-log-date {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 17px;
+  color: var(--log-muted);
+  background: rgba(5, 18, 40, 0.72);
+  border: 1px solid rgba(34, 66, 116, 0.42);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.training-log-main {
+  width: 100%;
+}
+
+.training-log-hero {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: clamp(34px, 6vh, 62px) 0 32px;
+  text-align: center;
+}
+
+.training-log-eyebrow,
+.training-log-label {
+  margin: 0;
+  color: var(--log-accent-light);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.training-log-hero h1 {
+  margin: 4px 0 0;
+  color: #f4f7ff;
+  font-size: clamp(38px, 4.2vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.training-log-hero > p:last-child {
+  margin: 0;
+  color: var(--log-muted);
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+
+.training-log-filter-card,
+.training-log-session-card,
+.training-log-overview-card,
+.training-log-latest-card,
+.training-log-empty {
+  background: linear-gradient(145deg, rgba(17, 37, 75, 0.82), rgba(10, 25, 53, 0.86));
+  border: 1px solid var(--log-border);
+  box-shadow: inset 0 1px 0 rgba(180, 210, 255, 0.025), 0 18px 45px rgba(1, 8, 23, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.training-log-filter-card {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 16px 22px;
+  background: rgba(14, 29, 59, 0.75);
+  border-radius: 22px;
+}
+
+.training-log-label {
+  margin-bottom: 7px;
+  color: var(--log-muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.training-log-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 245px;
+}
+
+.training-log-select-wrap select {
+  width: 100%;
+  min-height: 42px;
+  appearance: none;
+  padding: 0 40px 0 14px;
+  color: #eef4ff;
+  background: rgba(5, 14, 31, 0.66);
+  border: 1px solid rgba(60, 103, 173, 0.5);
+  border-radius: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.training-log-select-wrap select:focus-visible {
+  border-color: #68a7ff;
+  box-shadow: 0 0 0 3px rgba(67, 139, 248, 0.16);
+}
+
+.training-log-select-wrap > span {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  color: #9bb7e2;
+  font-size: 19px;
+  transform: translateY(-58%);
+  pointer-events: none;
+}
+
+.training-log-filter-context {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--log-muted);
+  font-size: 14px;
+}
+
+.training-log-filter-dot,
+.training-log-latest-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: #65a6ff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(82, 151, 255, 0.58);
+}
+
+.training-log-filter-divider {
+  width: 1px;
+  height: 17px;
+  margin: 0 3px;
+  background: rgba(117, 148, 198, 0.28);
+}
+
+.training-log-notice {
+  margin-top: 16px;
+  padding: 14px 17px;
+  color: #ffc2ca;
+  background: rgba(125, 31, 52, 0.22);
+  border: 1px solid rgba(255, 119, 135, 0.34);
+  border-radius: 14px;
+}
+
+.training-log-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(275px, 0.82fr);
+  align-items: start;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.training-log-session-column,
+.training-log-side-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.training-log-section-heading {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 7px;
+}
+
+.training-log-section-heading .training-log-eyebrow {
+  margin-bottom: 6px;
+  font-size: 9px;
+}
+
+.training-log-section-heading h2,
+.training-log-overview-card h2,
+.training-log-latest-card h2 {
+  margin: 0;
+  color: #eef4ff;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+
+.training-log-session-count {
+  color: var(--log-muted);
+  font-size: 13px;
+}
+
+.training-log-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.training-log-session-card {
+  overflow: hidden;
+  padding: 22px 24px 18px;
+  background: linear-gradient(135deg, rgba(17, 44, 91, 0.78), rgba(11, 27, 57, 0.9));
+  border-radius: 22px;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.training-log-session-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(94, 155, 250, 0.55);
+  box-shadow: 0 20px 48px rgba(2, 10, 28, 0.22);
+}
+
+.training-log-session-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(92, 125, 180, 0.2);
+}
+
+.training-log-session-date {
+  margin: 0 0 6px;
+  color: var(--log-accent-light);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.training-log-session-heading-copy h3 {
+  margin: 0;
+  color: #f4f7ff;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.training-log-session-subtitle {
+  margin: 5px 0 0;
+  color: var(--log-muted);
+  font-size: 13px;
+}
+
+.training-log-session-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.training-log-day-badge,
+.training-log-set-badge {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0 11px;
+  color: #a8ceff;
+  background: rgba(60, 130, 246, 0.12);
+  border: 1px solid rgba(90, 150, 240, 0.22);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.training-log-set-badge {
+  color: #d4e4ff;
+  background: rgba(6, 18, 39, 0.48);
+  border-color: rgba(92, 125, 180, 0.18);
+}
+
+.training-log-exercise-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.training-log-exercise {
+  padding: 16px 0 4px;
+}
+
+.training-log-exercise + .training-log-exercise {
+  margin-top: 12px;
+  border-top: 1px solid rgba(92, 125, 180, 0.16);
+}
+
+.training-log-exercise h4 {
+  margin: 0 0 11px;
+  color: #e8f0ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.training-log-set-table {
+  overflow: hidden;
+  border: 1px solid rgba(54, 88, 143, 0.23);
+  border-radius: 13px;
+  background: rgba(4, 13, 29, 0.3);
+}
+
+.training-log-set-head,
+.training-log-set-row {
+  display: grid;
+  grid-template-columns: 0.65fr 0.85fr 1fr 1.1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.training-log-set-head {
+  min-height: 34px;
+  color: #7894c0;
+  background: rgba(9, 24, 49, 0.5);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.training-log-set-row {
+  min-height: 42px;
+  color: #dce8fb;
+  border-top: 1px solid rgba(92, 125, 180, 0.12);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.training-log-set-row > span {
+  white-space: nowrap;
+}
+
+.training-log-set-row b {
+  display: inline-grid;
+  min-width: 28px;
+  height: 27px;
+  place-items: center;
+  color: #9ec5ff;
+  background: rgba(57, 119, 216, 0.22);
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.training-log-set-row small {
+  color: #839abe;
+  font-size: 10px;
+}
+
+.training-log-side-column {
+  padding-top: 72px;
+}
+
+.training-log-overview-card,
+.training-log-latest-card {
+  padding: 24px;
+  background: rgba(14, 29, 59, 0.78);
+  border-radius: 22px;
+}
+
+.training-log-overview-card {
+  min-height: 245px;
+}
+
+.training-log-overview-card h2,
+.training-log-latest-card h2 {
+  font-size: 19px;
+}
+
+.training-log-overview-primary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 17px;
+}
+
+.training-log-overview-primary strong {
+  color: var(--log-accent-light);
+  font-size: 58px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.training-log-overview-primary span {
+  color: var(--log-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.training-log-progress-track {
+  overflow: hidden;
+  height: 8px;
+  background: rgba(47, 78, 127, 0.53);
+  border-radius: 999px;
+}
+
+.training-log-progress-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #6fb2ff);
+  border-radius: inherit;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.38);
+}
+
+.training-log-overview-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 20px;
+}
+
+.training-log-overview-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.training-log-overview-stats > div + div {
+  padding-left: 20px;
+  border-left: 1px solid rgba(119, 148, 194, 0.24);
+}
+
+.training-log-overview-stats strong {
+  color: #eff5ff;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.training-log-overview-stats span {
+  color: var(--log-muted);
+  font-size: 11px;
+}
+
+.training-log-latest-card {
+  min-height: 190px;
+}
+
+.training-log-latest-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.training-log-latest-card h3 {
+  margin: 24px 0 5px;
+  color: #eaf1ff;
+  font-size: 16px;
+}
+
+.training-log-latest-card p {
+  margin: 0;
+  color: var(--log-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.training-log-latest-meta {
+  display: inline-flex;
+  margin-top: 16px;
+  color: #8bbcff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.training-log-empty {
+  display: grid;
+  min-height: 300px;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 38px;
+  background: rgba(14, 29, 59, 0.63);
+  border-radius: 22px;
+  text-align: center;
+}
+
+.training-log-empty h3 {
+  margin: 5px 0 0;
+  color: #eff5ff;
+  font-size: 19px;
+}
+
+.training-log-empty p {
+  margin: 0;
+  color: var(--log-muted);
+  font-size: 14px;
+}
+
+.training-log-empty-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  color: var(--log-accent-light);
+  background: rgba(59, 130, 246, 0.13);
+  border: 1px solid rgba(94, 155, 250, 0.25);
+  border-radius: 15px;
+}
+
+.training-log-empty-mark svg {
+  width: 23px;
+  height: 23px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.training-log-loader {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(111, 178, 255, 0.2);
+  border-top-color: #6fb2ff;
+  border-radius: 50%;
+  animation: training-log-spin 800ms linear infinite;
+}
+
+@keyframes training-log-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 980px) {
+  .training-log-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .training-log-side-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .training-log-shell {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .training-log-header {
+    gap: 12px;
+  }
+
+  .training-log-brand-group {
+    gap: 10px;
+  }
+
+  .training-log-brand {
+    gap: 7px;
+    font-size: 16px;
+  }
+
+  .training-log-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .training-log-menu-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .training-log-date {
+    min-height: 38px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+
+  .training-log-hero {
+    margin: 38px 0 24px;
+  }
+
+  .training-log-hero > p:last-child {
+    font-size: 14px;
+  }
+
+  .training-log-filter-card {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .training-log-select-wrap {
+    min-width: 0;
+  }
+
+  .training-log-filter-context {
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .training-log-content-grid {
+    gap: 17px;
+    margin-top: 14px;
+  }
+
+  .training-log-section-heading {
+    min-height: 62px;
+  }
+
+  .training-log-session-card {
+    padding: 17px 14px 14px;
+    border-radius: 18px;
+  }
+
+  .training-log-session-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .training-log-session-badges {
+    justify-content: flex-start;
+  }
+
+  .training-log-set-head,
+  .training-log-set-row {
+    grid-template-columns: 0.56fr 0.7fr 0.85fr 1fr;
+    gap: 6px;
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .training-log-set-head {
+    font-size: 8px;
+  }
+
+  .training-log-set-row {
+    font-size: 11px;
+  }
+
+  .training-log-set-row small {
+    font-size: 9px;
+  }
+
+  .training-log-side-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-log-page *,
+  .training-log-page *::before,
+  .training-log-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keep the history screen fixed while letting only its session feed scroll. */
+.training-log-page {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.training-log-shell {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+.training-log-header {
+  flex: none;
+}
+
+.training-log-main {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.training-log-hero {
+  flex: none;
+  gap: 5px;
+  margin: clamp(15px, 2.5vh, 28px) 0 18px;
+}
+
+.training-log-hero h1 {
+  font-size: clamp(34px, 3.4vw, 48px);
+}
+
+.training-log-hero > p:last-child {
+  font-size: 15px;
+}
+
+.training-log-filter-card {
+  min-height: 72px;
+  flex: none;
+  padding: 12px 18px;
+}
+
+.training-log-content-grid {
+  min-height: 0;
+  flex: 1;
+  align-items: stretch;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.training-log-session-column {
+  min-height: 0;
+  overflow: hidden;
+  gap: 10px;
+}
+
+.training-log-section-heading {
+  min-height: 58px;
+  flex: none;
+}
+
+.training-log-session-list {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 7px 10px 2px;
+  scrollbar-color: rgba(94, 151, 232, 0.55) rgba(8, 20, 43, 0.5);
+  scrollbar-width: thin;
+}
+
+.training-log-session-list::-webkit-scrollbar,
+.training-log-dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.training-log-session-list::-webkit-scrollbar-track,
+.training-log-dialog-content::-webkit-scrollbar-track {
+  background: rgba(8, 20, 43, 0.4);
+  border-radius: 999px;
+}
+
+.training-log-session-list::-webkit-scrollbar-thumb,
+.training-log-dialog-content::-webkit-scrollbar-thumb {
+  background: rgba(94, 151, 232, 0.5);
+  border: 2px solid rgba(8, 20, 43, 0.4);
+  border-radius: 999px;
+}
+
+.training-log-session-card {
+  width: 100%;
+  flex: none;
+  padding: 18px 20px 15px;
+  color: var(--log-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.training-log-session-card:focus-visible {
+  outline: 2px solid #75b2ff;
+  outline-offset: 3px;
+}
+
+.training-log-session-header {
+  align-items: center;
+  padding-bottom: 13px;
+}
+
+.training-log-session-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 13px;
+}
+
+.training-log-session-exercise-names {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.training-log-session-exercise-names span {
+  max-width: 240px;
+  overflow: hidden;
+  padding: 6px 9px;
+  color: #b8cbea;
+  background: rgba(7, 19, 41, 0.5);
+  border: 1px solid rgba(92, 125, 180, 0.15);
+  border-radius: 9px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-log-expand-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  color: #8bbcff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.training-log-expand-action b {
+  font-size: 17px;
+  transition: transform 160ms ease;
+}
+
+.training-log-session-card:hover .training-log-expand-action b {
+  transform: translate(2px, -2px);
+}
+
+.training-log-side-column {
+  min-height: 0;
+  padding-top: 58px;
+  overflow-y: auto;
+}
+
+.training-log-empty {
+  min-height: 0;
+  flex: 1;
+  padding: 24px;
+}
+
+.training-log-notice {
+  flex: none;
+  margin-top: 10px;
+}
+
+.training-log-exercise-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.training-log-exercise-heading > span {
+  color: #8098bf;
+  font-size: 11px;
+}
+
+.training-log-modal-backdrop {
+  position: fixed;
+  z-index: 5000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 7, 17, 0.52);
+  backdrop-filter: blur(13px) saturate(0.8);
+  -webkit-backdrop-filter: blur(13px) saturate(0.8);
+  animation: training-log-backdrop-in 180ms ease both;
+}
+
+.training-log-session-dialog {
+  display: flex;
+  width: min(900px, 100%);
+  max-height: min(84vh, 900px);
+  max-height: min(84dvh, 900px);
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--log-text);
+  background: linear-gradient(145deg, rgba(14, 30, 60, 0.98), rgba(5, 14, 31, 0.98));
+  border: 1px solid rgba(100, 153, 231, 0.38);
+  border-radius: 26px;
+  box-shadow: 0 32px 110px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(196, 218, 255, 0.07);
+  animation: training-log-dialog-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.training-log-dialog-header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 30px 20px;
+  border-bottom: 1px solid rgba(92, 125, 180, 0.18);
+}
+
+.training-log-dialog-header h2 {
+  margin: 7px 0 5px;
+  color: #f3f7ff;
+  font-size: clamp(25px, 3vw, 36px);
+  letter-spacing: -0.045em;
+}
+
+.training-log-dialog-header > div > p:last-child {
+  margin: 0;
+  color: var(--log-muted);
+  font-size: 13px;
+}
+
+.training-log-dialog-close {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  place-items: center;
+  color: #d6e4fb;
+  background: rgba(130, 158, 199, 0.1);
+  border: 1px solid rgba(139, 167, 208, 0.2);
+  border-radius: 13px;
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.training-log-dialog-close:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(105, 164, 255, 0.45);
+}
+
+.training-log-dialog-summary {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  padding: 16px 30px;
+  border-bottom: 1px solid rgba(92, 125, 180, 0.14);
+}
+
+.training-log-dialog-summary > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 13px;
+  background: rgba(5, 14, 31, 0.48);
+  border: 1px solid rgba(60, 103, 173, 0.22);
+  border-radius: 12px;
+}
+
+.training-log-dialog-summary strong {
+  color: #f2f6ff;
+  font-size: 18px;
+}
+
+.training-log-dialog-summary span {
+  color: var(--log-muted);
+  font-size: 11px;
+}
+
+.training-log-dialog-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 30px 26px;
+  scrollbar-color: rgba(94, 151, 232, 0.55) rgba(8, 20, 43, 0.5);
+  scrollbar-width: thin;
+}
+
+.training-log-dialog-content .training-log-exercise {
+  padding: 18px 0 5px;
+}
+
+@keyframes training-log-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes training-log-dialog-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 980px) {
+  .training-log-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .training-log-side-column {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .training-log-shell {
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .training-log-hero {
+    margin: 15px 0 14px;
+  }
+
+  .training-log-hero h1 {
+    font-size: clamp(31px, 9vw, 40px);
+  }
+
+  .training-log-filter-card {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+  }
+
+  .training-log-select-wrap {
+    min-width: min(48vw, 230px);
+  }
+
+  .training-log-filter-context {
+    justify-content: flex-end;
+    gap: 7px;
+    font-size: 10px;
+  }
+
+  .training-log-content-grid {
+    margin-top: 8px;
+  }
+
+  .training-log-session-list {
+    padding-right: 3px;
+  }
+
+  .training-log-session-card {
+    padding: 15px 13px 13px;
+  }
+
+  .training-log-session-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .training-log-session-heading-copy h3 {
+    font-size: 17px;
+  }
+
+  .training-log-session-subtitle {
+    font-size: 11px;
+  }
+
+  .training-log-session-badges {
+    gap: 5px;
+  }
+
+  .training-log-day-badge,
+  .training-log-set-badge {
+    min-height: 25px;
+    padding: 0 8px;
+    font-size: 9px;
+  }
+
+  .training-log-session-preview {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .training-log-dialog-header {
+    padding: 20px 18px 15px;
+  }
+
+  .training-log-dialog-summary {
+    padding: 12px 18px;
+  }
+
+  .training-log-dialog-content {
+    padding: 4px 18px 20px;
+  }
+
+  .training-log-modal-backdrop {
+    padding: 12px;
+  }
+
+  .training-log-session-dialog {
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-radius: 20px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 641px) {
+  .training-log-hero {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .training-log-filter-card {
+    min-height: 64px;
+  }
+
+  .training-log-content-grid {
+    margin-top: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-log-modal-backdrop,
+  .training-log-session-dialog {
+    animation: none;
+  }
+}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { createRoutine, deleteRoutine, renameRoutine, type Routine } from '@/api/pulse-api';
-import { PulseColors, PulseRadii, PulseSpacing } from '@/constants/pulse-theme';
+import { PulseColors, PulseSpacing } from '@/constants/pulse-theme';
 import { ActionButton, Card, Eyebrow, Glyph, Notice, PageFrame, PulseHeader } from '@/components/pulse/PulseUI';
 import { DeleteRoutineModal } from '@/components/pulse/DeleteRoutineModal';
 import { RoutineFormModal } from '@/components/pulse/RoutineFormModal';

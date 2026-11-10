@@ -1,5 +1,6 @@
 import { DarkTheme, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppTabs from '@/components/app-tabs';
 import { PulseRoutinesProvider } from '@/components/pulse/PulseRoutinesContext';
@@ -20,11 +21,13 @@ const pulseNavigationTheme = {
 
 export default function TabLayout() {
   return (
-    <ThemeProvider value={pulseNavigationTheme}>
-      <PulseRoutinesProvider>
-        <StatusBar style="light" />
-        <AppTabs />
-      </PulseRoutinesProvider>
-    </ThemeProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <ThemeProvider value={pulseNavigationTheme}>
+        <PulseRoutinesProvider>
+          <StatusBar style="light" />
+          <AppTabs />
+        </PulseRoutinesProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

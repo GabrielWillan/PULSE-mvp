@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { TextInputInstance } from 'react-native';
 
 import type { WorkoutExercise } from '@/api/pulse-api';
@@ -18,6 +18,7 @@ export function RestLogView({
   setNumber,
   restDuration,
   restRemaining,
+  progress,
   reps,
   weight,
   saved,
@@ -36,6 +37,7 @@ export function RestLogView({
   setNumber: number;
   restDuration: number;
   restRemaining: number;
+  progress: number;
   reps: string;
   weight: string;
   saved: boolean;
@@ -50,11 +52,24 @@ export function RestLogView({
   onSkip: () => void;
   onAdjustTime: (delta: number) => void;
 }) {
+  const normalizedProgress = Math.max(0, Math.min(1, progress));
+  const timerMarks = Array.from({ length: 60 }, (_, index) => {
+    const angle = ((index * 6) - 90) * Math.PI / 180;
+    const radius = 80;
+    const markSize = 3;
+    const x = 89 + Math.cos(angle) * radius - markSize / 2;
+    const y = 89 + Math.sin(angle) * radius - markSize / 2;
+    return <View key={index} style={[styles.timerMark, { left: x, top: y }, index / 60 < normalizedProgress ? styles.timerMarkActive : styles.timerMarkTrack]} />;
+  });
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.restLabel}>REST · {exercise.name.toUpperCase()}</Text>
       <View style={styles.timerWrap}>
-        <View style={styles.timerRing}><View style={styles.timerInner}><Text style={styles.time}>{formatTime(restRemaining)}</Text><Text style={styles.timeOf}>of {formatTime(restDuration)}</Text></View></View>
+        <View accessibilityLabel={`${formatTime(restRemaining)} rest remaining`} style={styles.timerRing}>
+          {timerMarks}
+          <View style={styles.timerInner}><Text style={styles.time}>{formatTime(restRemaining)}</Text><Text style={styles.timeOf}>of {formatTime(restDuration)}</Text></View>
+        </View>
         <View style={styles.timeActions}><Pressable onPress={() => onAdjustTime(-15)} style={styles.timeAdjust}><Text style={styles.adjustText}>−15s</Text></Pressable><Pressable onPress={() => onAdjustTime(15)} style={styles.timeAdjust}><Text style={styles.adjustText}>+15s</Text></Pressable></View>
       </View>
       <View style={styles.fields}>
@@ -90,7 +105,8 @@ function LogField({
 }) {
   const inputRef = useRef<TextInputInstance | null>(null);
   const keyboardFocus = useKeyboardFocus();
-  useEffect(() => keyboardFocus?.registerInput(inputRef.current), [keyboardFocus]);
+  const registerInput = keyboardFocus?.registerInput;
+  useEffect(() => registerInput?.(inputRef.current), [registerInput]);
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -101,8 +117,11 @@ function LogField({
           editable={editable}
           onChangeText={onChangeText}
           keyboardType={keyboardType}
+          returnKeyType="done"
+          inputAccessoryViewID={Platform.OS === 'ios' ? keyboardFocus?.accessoryId : undefined}
           selectTextOnFocus
           style={styles.input}
+          onSubmitEditing={Keyboard.dismiss}
           onFocus={(event) => keyboardFocus?.onInputFocus(inputRef.current, event.nativeEvent.target)}
           onBlur={(event) => keyboardFocus?.onInputBlur(event.nativeEvent.target)}
         />
@@ -116,7 +135,10 @@ const styles = StyleSheet.create({
   wrap: { gap: 12 },
   restLabel: { color: '#70AAFF', textAlign: 'center', fontSize: 10, fontWeight: '800', letterSpacing: 1.6 },
   timerWrap: { alignItems: 'center', gap: 8 },
-  timerRing: { width: 178, height: 178, alignItems: 'center', justifyContent: 'center', borderRadius: 89, borderWidth: 8, borderColor: PulseColors.accent, backgroundColor: '#0B1930', shadowColor: PulseColors.accent, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  timerRing: { width: 178, height: 178, alignItems: 'center', justifyContent: 'center', borderRadius: 89, borderWidth: 1, borderColor: 'rgba(68,112,175,0.22)', backgroundColor: '#0B1930', shadowColor: PulseColors.accent, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  timerMark: { position: 'absolute', width: 3, height: 3, borderRadius: 2 },
+  timerMarkActive: { backgroundColor: PulseColors.accent, shadowColor: PulseColors.accentLight, shadowOpacity: 0.6, shadowRadius: 3, elevation: 1 },
+  timerMarkTrack: { backgroundColor: '#1B3153' },
   timerInner: { alignItems: 'center', justifyContent: 'center', width: 148, height: 148, borderRadius: 74, backgroundColor: '#08152C' },
   time: { color: '#fff', fontSize: 38, fontWeight: '800', letterSpacing: -1.5 },
   timeOf: { color: PulseColors.mutedLight, fontSize: 10 },

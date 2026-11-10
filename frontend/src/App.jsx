@@ -1,5 +1,6 @@
 import { RoutineMenu } from "./components/menu_components/menu";
 import { DashBoard } from "./components/dashboard-components/dashboard";
+import { TrainingLog } from "./components/session_components/training_log";
 import "./App.css";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
@@ -32,6 +33,7 @@ function AnimatedRoutes() {
       <Routes location={displayLocation}>
         <Route path="/" element={<RoutineMenu />} />
         <Route path="/dashboard" element={<DashBoard />} />
+        <Route path="/training-log" element={<TrainingLog />} />
       </Routes>
     </div>
   );

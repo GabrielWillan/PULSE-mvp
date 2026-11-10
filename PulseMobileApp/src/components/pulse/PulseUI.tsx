@@ -1,7 +1,9 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
+  Platform,
   StyleProp,
   StyleSheet,
   Text,
@@ -56,13 +58,16 @@ export function PulseMark({ compact = false }: { compact?: boolean }) {
 export function PulseHeader({
   right,
   subtitle,
+  onMenuPress,
 }: {
   right?: ReactNode;
   subtitle?: string;
+  onMenuPress?: () => void;
 }) {
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
+        {onMenuPress ? <IconButton glyph="menu" label="Open menu" onPress={onMenuPress} /> : null}
         <PulseMark compact />
         <Text style={styles.brandText}>PULSE</Text>
       </View>
@@ -164,11 +169,15 @@ export function TextField({
   inputStyle,
   onFocus,
   onBlur,
+  onSubmitEditing,
+  returnKeyType,
+  inputAccessoryViewID,
   ...props
 }: TextInputProps & { label: string; inputStyle?: StyleProp<TextStyle> }) {
   const inputRef = useRef<TextInputInstance | null>(null);
   const keyboardFocus = useKeyboardFocus();
-  useEffect(() => keyboardFocus?.registerInput(inputRef.current), [keyboardFocus]);
+  const registerInput = keyboardFocus?.registerInput;
+  useEffect(() => registerInput?.(inputRef.current), [registerInput]);
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -177,6 +186,12 @@ export function TextField({
         placeholderTextColor="#7087AD"
         selectionColor={PulseColors.accentLight}
         style={[styles.textInput, inputStyle]}
+        returnKeyType={returnKeyType ?? 'done'}
+        inputAccessoryViewID={inputAccessoryViewID ?? (Platform.OS === 'ios' ? keyboardFocus?.accessoryId : undefined)}
+        onSubmitEditing={(event) => {
+          onSubmitEditing?.(event);
+          Keyboard.dismiss();
+        }}
         onFocus={(event) => {
           keyboardFocus?.onInputFocus(inputRef.current, event.nativeEvent.target);
           onFocus?.(event);
@@ -206,7 +221,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   pageContent: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: PulseSpacing.page, paddingTop: PulseSpacing.md, paddingBottom: 96, gap: PulseSpacing.lg },
   header: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   brandMark: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: PulseColors.accent, shadowColor: PulseColors.accent, shadowOpacity: 0.28, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 5 },
   brandMarkCompact: { width: 34, height: 34, borderRadius: 11 },
   pulseLine: { height: 18, flexDirection: 'row', alignItems: 'center', gap: 2 },

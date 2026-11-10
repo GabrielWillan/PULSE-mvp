@@ -1,12 +1,16 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   GestureResponderEvent,
   Keyboard,
+  InputAccessoryView,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
+  Pressable,
   ScrollView,
   ScrollViewProps,
   StyleSheet,
+  Text,
   findNodeHandle,
   useWindowDimensions,
   View,
@@ -18,6 +22,7 @@ import type { ScrollViewInstance, TextInputInstance } from 'react-native';
 type KeyboardFocusValue = {
   scrollRef: RefObject<ScrollViewInstance | null>;
   keyboardHeight: number;
+  accessoryId: string;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   onInputFocus: (input: TextInputInstance | null, target: number) => void;
   onInputBlur: (target: number) => void;
@@ -30,7 +35,8 @@ export function useKeyboardFocus() {
   return useContext(KeyboardFocusContext);
 }
 
-export function KeyboardFocusProvider({ children }: { children: ReactNode }) {
+export function KeyboardFocusProvider({ children, flex = true }: { children: ReactNode; flex?: boolean }) {
+  const accessoryId = `pulse-keyboard-${useId().replace(/:/g, '')}`;
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const focusedTarget = useRef<number | null>(null);
   const inputTargets = useRef(new Set<number>());
@@ -109,16 +115,29 @@ export function KeyboardFocusProvider({ children }: { children: ReactNode }) {
     }, 0);
   }, []);
 
-  const value = useMemo(() => ({ scrollRef, keyboardHeight: visibleKeyboardHeight, onScroll, onInputFocus, onInputBlur, registerInput }), [onScroll, onInputBlur, onInputFocus, registerInput, visibleKeyboardHeight]);
+  const value = useMemo(() => ({ scrollRef, keyboardHeight: visibleKeyboardHeight, accessoryId, onScroll, onInputFocus, onInputBlur, registerInput }), [accessoryId, onScroll, onInputBlur, onInputFocus, registerInput, visibleKeyboardHeight]);
 
   return (
     <KeyboardFocusContext.Provider value={value}>
-      <View style={{ flex: 1 }} onTouchStart={onTouchStart}>
+      <View style={flex ? styles.flexContainer : undefined} onTouchStart={onTouchStart}>
         {children}
       </View>
+      {Platform.OS === 'ios' && visibleKeyboardHeight > 0 ? (
+        <InputAccessoryView nativeID={accessoryId}>
+          <View style={{ height: 44, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 16, backgroundColor: '#0B1930', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#315078' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Dismiss keyboard" hitSlop={10} onPress={Keyboard.dismiss} style={{ minWidth: 52, minHeight: 40, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: '#8FC0FF', fontSize: 16, fontWeight: '700' }}>Done</Text>
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      ) : null}
     </KeyboardFocusContext.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  flexContainer: { flex: 1 },
+});
 
 export function KeyboardFocusScrollView({ onScroll, contentContainerStyle, ...props }: ScrollViewProps) {
   const keyboardFocus = useKeyboardFocus();

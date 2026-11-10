@@ -4,6 +4,7 @@ import { Modal, Platform } from 'react-native';
 
 import { createSession, getRoutineDays, type CreatedSession, type RoutineDay } from '@/api/pulse-api';
 import { ActiveSessionScreen } from '@/components/pulse/ActiveSessionScreen';
+import { useBottomBarActions } from '@/components/pulse/BottomBarActionsContext';
 import { ChooseWorkoutModal } from '@/components/pulse/ChooseWorkoutModal';
 import { EditWorkoutScreen } from '@/components/pulse/EditWorkoutScreen';
 import { HomeDashboard } from '@/components/pulse/HomeDashboard';
@@ -14,6 +15,7 @@ import { usePulseRoutines } from '@/components/pulse/PulseRoutinesContext';
 type ActiveSession = {
   sessionId: number;
   startedAt?: string | null;
+  routineId: number;
   routineName: string;
   day: RoutineDay;
 };
@@ -34,6 +36,7 @@ function getStartedAt(response: CreatedSession) {
 
 export function HomeFlow() {
   const { routines, loadingRoutines, routinesError, refreshRoutines } = usePulseRoutines();
+  const { addWorkoutRequestId, handledAddWorkoutRequestId, markAddWorkoutHandled } = useBottomBarActions();
   const [selectedRoutineId, setSelectedRoutineId] = useState<number | null>(null);
   const [daysQuery, setDaysQuery] = useState<DaysQuery | null>(null);
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
@@ -56,6 +59,16 @@ export function HomeFlow() {
   const selectedRestDay = selectedDay
     ? (restDays[selectedDay.id] ?? Boolean(selectedDay.is_rest_day))
     : false;
+
+  useEffect(() => {
+    if (addWorkoutRequestId <= handledAddWorkoutRequestId || loadingRoutines || loadingDays) return;
+    const action = setTimeout(() => {
+      markAddWorkoutHandled(addWorkoutRequestId);
+      if (selectedDay) setChooseWorkoutVisible(true);
+      else router.navigate('/explore');
+    }, 0);
+    return () => clearTimeout(action);
+  }, [addWorkoutRequestId, handledAddWorkoutRequestId, loadingDays, loadingRoutines, markAddWorkoutHandled, selectedDay]);
 
   const activatePendingSession = useCallback(() => {
     const nextSession = pendingSession.current;
@@ -107,13 +120,8 @@ export function HomeFlow() {
     }
   }, [routine]);
 
-  const openChooseWorkout = useCallback(() => {
-    if (selectedDay) setChooseWorkoutVisible(true);
-    else router.navigate('/explore');
-  }, [selectedDay]);
-
   async function startSession() {
-    if (!selectedDay || selectedRestDay) return;
+    if (!selectedDay || !routine || selectedRestDay) return;
     setSessionStarting(true);
     setSessionError('');
     try {
@@ -125,6 +133,7 @@ export function HomeFlow() {
       pendingSession.current = {
         sessionId,
         startedAt: getStartedAt(result),
+        routineId: routine.id,
         routineName: routine?.name ?? 'Workout',
         day: selectedDay,
       };
@@ -156,7 +165,6 @@ export function HomeFlow() {
         onOpenRoutinePicker={() => setRoutinePickerVisible(true)}
         onOpenRoutines={() => router.navigate('/explore')}
         onSelectDay={(day) => setSelectedDayId(day.id)}
-        onAddWorkout={openChooseWorkout}
         onEditWorkout={() => setEditWorkoutVisible(true)}
         onStartSession={() => { setSessionError(''); setSessionPreviewVisible(true); }}
         onRetry={() => {
@@ -224,6 +232,7 @@ export function HomeFlow() {
 
       {activeSession ? (
         <ActiveSessionScreen
+          key={activeSession.sessionId}
           session={activeSession}
           restUnitPreferences={restUnitPreferences}
           onExit={() => setActiveSession(null)}

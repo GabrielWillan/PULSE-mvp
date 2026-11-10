@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { endSession, getSessionLogs, logSession, updateSessionLog, type RoutineDay, type SessionLog, type WorkoutExercise } from '@/api/pulse-api';
@@ -21,12 +21,6 @@ function setKey(exercise: WorkoutExercise, setNumber: number) {
   return `${exercise.exercise_detail_id}:${setNumber}`;
 }
 
-function parseStartedAt(value?: string | null) {
-  if (!value) return 0;
-  const parsed = Date.parse(value.replace(' ', 'T'));
-  return Number.isFinite(parsed) ? parsed : Date.now();
-}
-
 function formatElapsed(seconds: number) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -40,7 +34,7 @@ export function ActiveSessionScreen({
   restUnitPreferences,
   onExit,
 }: {
-  session: { sessionId: number; startedAt?: string | null; routineName: string; day: RoutineDay };
+  session: { sessionId: number; startedAt?: string | null; routineId: number; routineName: string; day: RoutineDay };
   restUnitPreferences: Record<number, 'seconds' | 'minutes'>;
   onExit: () => void;
 }) {
@@ -50,10 +44,12 @@ export function ActiveSessionScreen({
   const [setNumber, setSetNumber] = useState(1);
   const [restDuration, setRestDuration] = useState(0);
   const [restRemaining, setRestRemaining] = useState(0);
+  const [restProgress, setRestProgress] = useState(0);
   const [setDraft, setSetDraft] = useState<SetDraft>({ reps: '', weight: '0' });
   const [savedSets, setSavedSets] = useState<Record<string, SavedSet>>({});
   const [lastValues, setLastValues] = useState<Record<number, SetDraft>>({});
   const [logsLoading, setLogsLoading] = useState(true);
+  const [logsLoadError, setLogsLoadError] = useState('');
   const [saving, setSaving] = useState(false);
   const [logError, setLogError] = useState('');
   const [logMessage, setLogMessage] = useState('');
@@ -64,7 +60,8 @@ export function ActiveSessionScreen({
   const [showEndConfirmation, setShowEndConfirmation] = useState(false);
   const [endError, setEndError] = useState('');
   const [ending, setEnding] = useState(false);
-  const [clock, setClock] = useState({ now: 0, fallbackStart: 0 });
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [sessionStartTime] = useState(() => Date.now());
   const fade = useRef(new Animated.Value(1)).current;
   const slide = useRef(new Animated.Value(0)).current;
   const transitioning = useRef(false);
@@ -72,17 +69,12 @@ export function ActiveSessionScreen({
   const exerciseIndexRef = useRef(0);
   const setNumberRef = useRef(1);
   const restDeadline = useRef<number | null>(null);
+  const restDurationRef = useRef(0);
   const advanceAfterRestRef = useRef<() => void>(() => undefined);
 
   const exercise = exercises[exerciseIndex];
   const currentKey = exercise ? setKey(exercise, setNumber) : '';
   const currentSavedSet = currentKey ? savedSets[currentKey] : undefined;
-  const startedAt = parseStartedAt(session.startedAt);
-  const elapsedSeconds = session.startedAt
-    ? Math.max(0, Math.floor((clock.now - startedAt) / 1000))
-    : clock.fallbackStart && clock.now
-      ? Math.max(0, Math.floor((clock.now - clock.fallbackStart) / 1000))
-      : 0;
   const totalSets = useMemo(() => exercises.reduce((sum, item) => sum + Math.max(0, Number(item.sets) || 0), 0), [exercises]);
 
   const transitionTo = useCallback((nextStage: SessionStage, direction = 1) => {
@@ -105,12 +97,17 @@ export function ActiveSessionScreen({
   }, [fade, slide]);
 
   useEffect(() => {
-    const ticker = setInterval(() => {
-      const now = Date.now();
-      setClock((current) => ({ now, fallbackStart: current.fallbackStart || now }));
-    }, 1000);
-    return () => clearInterval(ticker);
-  }, []);
+    const updateClock = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - sessionStartTime) / 1000)));
+    updateClock();
+    const ticker = setInterval(updateClock, 1000);
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') updateClock();
+    });
+    return () => {
+      clearInterval(ticker);
+      appStateSubscription.remove();
+    };
+  }, [sessionStartTime]);
 
   useEffect(() => {
     stageRef.current = stage;
@@ -120,9 +117,10 @@ export function ActiveSessionScreen({
 
   useEffect(() => {
     let active = true;
-    getSessionLogs()
+    getSessionLogs(session.routineId)
       .then((response) => {
         if (!active) return;
+        setLogsLoadError('');
         const logs = Array.isArray(response?.logged_sessions) ? response.logged_sessions : [];
         const thisSession = logs.filter((item) => Number(item.sessions_id) === session.sessionId);
         const nextSaved: Record<string, SavedSet> = {};
@@ -136,12 +134,17 @@ export function ActiveSessionScreen({
         setSavedSets(nextSaved);
         setLastValues(nextLast);
       })
-      .catch(() => undefined)
+      .catch((error: unknown) => {
+        if (!active) return;
+        setLogsLoadError(error instanceof Error ? `Saved sets could not be loaded: ${error.message}` : 'Saved sets could not be loaded.');
+      })
       .finally(() => { if (active) setLogsLoading(false); });
     return () => { active = false; };
-  }, [exercises, session.sessionId]);
+  }, [exercises, session.routineId, session.sessionId]);
 
   const advanceAfterRest = useCallback(() => {
+    restDeadline.current = null;
+    setRestProgress(0);
     const currentExercise = exercises[exerciseIndexRef.current];
     if (!currentExercise) return;
     const currentSet = setNumberRef.current;
@@ -163,7 +166,12 @@ export function ActiveSessionScreen({
       transitionTo('overview', 1);
       return;
     }
-    endSession(session.sessionId).catch(() => undefined).finally(() => transitionTo('complete', 1));
+    endSession(session.sessionId)
+      .then(() => transitionTo('complete', 1))
+      .catch((error: unknown) => {
+        setEndError(error instanceof Error ? error.message : 'Could not end this session');
+        setShowEndConfirmation(true);
+      });
   }, [exercises, session.sessionId, transitionTo]);
   useEffect(() => {
     advanceAfterRestRef.current = advanceAfterRest;
@@ -174,17 +182,26 @@ export function ActiveSessionScreen({
     const tick = () => {
       const deadline = restDeadline.current;
       if (deadline == null) return;
-      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      const remainingSeconds = Math.max(0, (deadline - Date.now()) / 1000);
+      const remaining = Math.ceil(remainingSeconds);
       setRestRemaining(remaining);
-      if (remaining === 0) {
+      setRestProgress(restDurationRef.current > 0 ? remainingSeconds / restDurationRef.current : 0);
+      if (remainingSeconds === 0) {
+        if (saving || (currentSavedSet && isEditingSavedSet)) return;
         restDeadline.current = null;
         advanceAfterRestRef.current();
       }
     };
     tick();
     const timer = setInterval(tick, 250);
-    return () => clearInterval(timer);
-  }, [stage]);
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') tick();
+    });
+    return () => {
+      clearInterval(timer);
+      appStateSubscription.remove();
+    };
+  }, [stage, currentSavedSet, isEditingSavedSet, saving]);
 
   function startSet() {
     if (!exercise) return;
@@ -200,9 +217,12 @@ export function ActiveSessionScreen({
 
   function completeSet() {
     if (!exercise) return;
+    // rest_time is stored in seconds by the workout forms; the preference only changes how it is displayed.
     const duration = Math.max(0, Math.round(Number(exercise.rest_time) || 0));
+    restDurationRef.current = duration;
     setRestDuration(duration);
     setRestRemaining(duration);
+    setRestProgress(duration > 0 ? 1 : 0);
     restDeadline.current = Date.now() + duration * 1000;
     const existing = savedSets[setKey(exercise, setNumber)];
     const previous = savedSets[setKey(exercise, setNumber - 1)];
@@ -255,6 +275,9 @@ export function ActiveSessionScreen({
       if (skipAfterSave) {
         setShowSkipWarning(false);
         restDeadline.current = null;
+        setRestProgress(0);
+        advanceAfterRestRef.current();
+      } else if (restRemaining === 0) {
         advanceAfterRestRef.current();
       }
     } catch (error) {
@@ -267,6 +290,7 @@ export function ActiveSessionScreen({
   function requestSkip() {
     if (savedSets[currentKey] || skipWarningDisabled) {
       restDeadline.current = null;
+      setRestProgress(0);
       advanceAfterRestRef.current();
       return;
     }
@@ -277,6 +301,7 @@ export function ActiveSessionScreen({
     if (dontAskAgain) setSkipWarningDisabled(true);
     setShowSkipWarning(false);
     restDeadline.current = null;
+    setRestProgress(0);
     advanceAfterRestRef.current();
   }
 
@@ -284,10 +309,13 @@ export function ActiveSessionScreen({
     const deadline = restDeadline.current;
     if (deadline == null) return;
     const nextRemaining = Math.max(0, restRemaining + delta);
+    const nextDuration = Math.max(0, restDurationRef.current + delta);
+    restDurationRef.current = nextDuration;
     restDeadline.current = Date.now() + nextRemaining * 1000;
-    setRestDuration((current) => Math.max(0, current + delta));
+    setRestDuration(nextDuration);
     setRestRemaining(nextRemaining);
-    if (nextRemaining === 0) {
+    setRestProgress(nextDuration > 0 ? nextRemaining / nextDuration : 0);
+    if (nextRemaining === 0 && !saving && !(currentSavedSet && isEditingSavedSet)) {
       restDeadline.current = null;
       advanceAfterRestRef.current();
     }
@@ -298,6 +326,8 @@ export function ActiveSessionScreen({
     setEndError('');
     try {
       await endSession(session.sessionId);
+      setShowEndConfirmation(false);
+      setEndError('');
       onExit();
     } catch (error) {
       setEndError(error instanceof Error ? error.message : 'Could not end this session');
@@ -341,17 +371,17 @@ export function ActiveSessionScreen({
                 <Pressable accessibilityRole="button" onPress={() => setShowEndConfirmation(true)} style={styles.endButton}><Text style={styles.endText}>End session</Text></Pressable>
               </View>
               {logsLoading ? <Text style={styles.loadingText}>Loading saved sets…</Text> : null}
+              {logsLoadError ? <Notice tone="error">{logsLoadError}</Notice> : null}
               {exercise ? (
                 <Animated.View style={[styles.stage, { opacity: fade, transform: [{ translateX: slide }] }]}>
                   {stage === 'overview' ? <SessionExerciseOverview exercise={exercise} index={exerciseIndex} exerciseCount={exercises.length} setNumber={setNumber} restUnit={restUnitPreferences[exercise.exercise_detail_id] ?? 'seconds'} onStartSet={startSet} /> : null}
                   {stage === 'set' ? <SetOverview exercise={exercise} index={exerciseIndex} exerciseCount={exercises.length} setNumber={setNumber} restUnit={restUnitPreferences[exercise.exercise_detail_id] ?? 'seconds'} onComplete={completeSet} /> : null}
-                  {stage === 'rest' ? <RestLogView exercise={exercise} setNumber={setNumber} restDuration={restDuration} restRemaining={restRemaining} reps={setDraft.reps} weight={setDraft.weight} saved={Boolean(currentSavedSet)} editing={isEditingSavedSet} saving={saving} error={logError} success={logMessage} onRepsChange={(reps) => setSetDraft((current) => ({ ...current, reps }))} onWeightChange={(weight) => setSetDraft((current) => ({ ...current, weight }))} onSave={() => saveSet(false)} onEdit={() => { setIsEditingSavedSet(true); setLogMessage(''); }} onSkip={requestSkip} onAdjustTime={adjustRest} /> : null}
+                  {stage === 'rest' ? <RestLogView exercise={exercise} setNumber={setNumber} restDuration={restDuration} restRemaining={restRemaining} progress={restProgress} reps={setDraft.reps} weight={setDraft.weight} saved={Boolean(currentSavedSet)} editing={isEditingSavedSet} saving={saving} error={logError} success={logMessage} onRepsChange={(reps) => setSetDraft((current) => ({ ...current, reps }))} onWeightChange={(weight) => setSetDraft((current) => ({ ...current, weight }))} onSave={() => saveSet(false)} onEdit={() => { setIsEditingSavedSet(true); setLogMessage(''); }} onSkip={requestSkip} onAdjustTime={adjustRest} /> : null}
                 </Animated.View>
               ) : <Notice tone="error">This workout has no exercises to start.</Notice>}
             </KeyboardFocusScrollView>
           </KeyboardAvoidingView>
-          <EndSessionModal visible={showEndConfirmation} loading={ending} onClose={() => { setShowEndConfirmation(false); setEndError(''); }} onConfirm={confirmEndSession} />
-          {endError ? <View style={styles.floatingError}><Text style={styles.floatingErrorText}>{endError}</Text></View> : null}
+          <EndSessionModal visible={showEndConfirmation} loading={ending} error={endError} onClose={() => { setShowEndConfirmation(false); setEndError(''); }} onConfirm={confirmEndSession} />
           <SkipWarningModal visible={showSkipWarning} dontAskAgain={dontAskAgain} onDontAskAgain={setDontAskAgain} onLogAndSkip={() => saveSet(true)} onSkipWithoutLog={skipWithoutLog} onContinue={() => setShowSkipWarning(false)} />
         </SafeAreaView>
       </KeyboardFocusProvider>
@@ -385,6 +415,4 @@ const styles = StyleSheet.create({
   stepLine: { width: 9, height: 1, backgroundColor: '#27446F' },
   stage: { width: '100%', maxWidth: 600, alignSelf: 'center', flex: 1, justifyContent: 'center' },
   loadingText: { alignSelf: 'center', color: PulseColors.muted, fontSize: 10 },
-  floatingError: { position: 'absolute', bottom: 18, left: 18, right: 18, padding: 10, borderRadius: 12, backgroundColor: '#3A1420', borderWidth: 1, borderColor: 'rgba(255,119,135,0.35)' },
-  floatingErrorText: { color: '#FFC0C8', textAlign: 'center', fontSize: 11 },
 });

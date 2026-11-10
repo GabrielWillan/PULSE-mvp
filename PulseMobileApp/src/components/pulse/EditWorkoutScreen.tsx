@@ -3,10 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { reorderExercises, updateWorkoutTitle, type RoutineDay } from '@/api/pulse-api';
 import { PulseColors, PulseSpacing } from '@/constants/pulse-theme';
-import { ActionButton, Card, Eyebrow, Glyph, IconButton, Notice, PageFrame, PulseHeader } from '@/components/pulse/PulseUI';
+import { ActionButton, Card, Eyebrow, Glyph, IconButton, Notice, PageFrame, PulseHeader, TextField } from '@/components/pulse/PulseUI';
 import { ExerciseDetailsEditor } from '@/components/pulse/ExerciseDetailsEditor';
 import { WorkoutExerciseList } from '@/components/pulse/WorkoutExerciseList';
-import { TextField } from '@/components/pulse/PulseUI';
 
 export function EditWorkoutScreen({
   routineName,
@@ -101,7 +100,7 @@ export function EditWorkoutScreen({
         <Eyebrow>EDIT WORKOUT · {day.day_name.toUpperCase()}</Eyebrow>
         {editingTitle ? (
           <View style={styles.titleEditor}>
-            <TextField label="WORKOUT NAME" value={title} onChangeText={setTitle} placeholder="e.g. Shoulders & Chest" autoFocus />
+            <TextField label="WORKOUT NAME" value={title} onChangeText={setTitle} placeholder="e.g. Shoulders & Chest" autoFocus returnKeyType="go" onSubmitEditing={() => { if (!savingTitle) void saveWorkoutTitle(); }} />
             <View style={styles.titleActions}><ActionButton title="Save name" onPress={saveWorkoutTitle} loading={savingTitle} /><Pressable onPress={() => { setTitle(day.workout_title ?? ''); setEditingTitle(false); }} style={styles.cancelTitle}><Text style={styles.cancelTitleText}>Cancel</Text></Pressable></View>
           </View>
         ) : (

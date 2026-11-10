@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./session_overview.css";
-import { logSession, updateSessionLog } from "../api_components";
+import { endSession, logSession, updateSessionLog } from "../api_components";
 
 const SKIP_WARNING_KEY = "pulse.skipUnloggedSetWarningDisabled";
 
@@ -41,14 +41,22 @@ function getRestDurationSeconds(exercise) {
 
 function parseStartedAt(startedAt) {
   if (!startedAt) return null;
-  const parsed = Date.parse(String(startedAt).replace(" ", "T"));
+  const normalized = String(startedAt)
+    .trim()
+    .replace(" ", "T")
+    .replace(/\.(\d{3})\d+/, ".$1");
+  const timestamp = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
+    ? normalized
+    : `${normalized}Z`;
+  const parsed = Date.parse(timestamp);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
 function formatElapsed(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const wholeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hours = Math.floor(wholeSeconds / 3600);
+  const minutes = Math.floor((wholeSeconds % 3600) / 60);
+  const remainingSeconds = wholeSeconds % 60;
   const pad = (value) => String(value).padStart(2, "0");
   return hours > 0
     ? `${hours}:${pad(minutes)}:${pad(remainingSeconds)}`
@@ -92,7 +100,7 @@ export function SessionOverview({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [activeView, setActiveView] = useState("overview");
   const [currentSetNumber, setCurrentSetNumber] = useState(1);
-  const [now, setNow] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const [restDuration, setRestDuration] = useState(0);
   const [restRemaining, setRestRemaining] = useState(0);
   const [setDrafts, setSetDrafts] = useState({});
@@ -106,13 +114,32 @@ export function SessionOverview({
   const [dontWarnOnSkip, setDontWarnOnSkip] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
+  const [sessionEndError, setSessionEndError] = useState("");
   const leaveTimeoutRef = useRef(null);
   const restDeadlineRef = useRef(null);
+  const localSessionStartRef = useRef(Date.now());
+  const sessionEndedRef = useRef(false);
   const startedAtMs = parseStartedAt(session?.startedAt);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(intervalId);
+    sessionEndedRef.current = false;
+  }, [session?.sessionId]);
+
+  useEffect(() => {
+    const updateNow = () => setNow(Date.now());
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") updateNow();
+    };
+    updateNow();
+    const intervalId = window.setInterval(updateNow, 1000);
+    window.addEventListener("focus", updateNow);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", updateNow);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -135,10 +162,29 @@ export function SessionOverview({
 
   useEffect(() => () => window.clearTimeout(leaveTimeoutRef.current), []);
 
-  function confirmLeaveSession() {
-    setShowExitConfirmation(false);
-    setIsLeaving(true);
-    leaveTimeoutRef.current = window.setTimeout(() => onExit?.(), 170);
+  const endCurrentSession = useCallback(async () => {
+    if (sessionEndedRef.current) return;
+    const sessionId = Number(session?.sessionId);
+    if (!Number.isInteger(sessionId) || sessionId < 1) {
+      throw new Error("This session does not have a valid ID.");
+    }
+    await endSession(sessionId);
+    sessionEndedRef.current = true;
+  }, [session?.sessionId]);
+
+  async function confirmLeaveSession() {
+    setIsEndingSession(true);
+    setSessionEndError("");
+    try {
+      await endCurrentSession();
+      setShowExitConfirmation(false);
+      setIsLeaving(true);
+      leaveTimeoutRef.current = window.setTimeout(() => onExit?.(), 170);
+    } catch (error) {
+      setSessionEndError(error.message || "Could not end this session.");
+    } finally {
+      setIsEndingSession(false);
+    }
   }
 
   const selectedExercise = exercises[selectedIndex] ?? null;
@@ -171,9 +217,10 @@ export function SessionOverview({
   const restProgress = restDuration > 0
     ? Math.max(0, Math.min(100, (restRemaining / restDuration) * 100))
     : 0;
-  const elapsedSeconds = startedAtMs == null
-    ? 0
-    : Math.max(0, Math.floor((now - startedAtMs) / 1000));
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((now - (startedAtMs ?? localSessionStartRef.current)) / 1000)
+  );
   const title =
     session?.workoutTitle || session?.title || session?.day || "Workout";
   const selectedDay = String(session?.day ?? "").toUpperCase();
@@ -193,20 +240,26 @@ export function SessionOverview({
       setCurrentSetNumber(1);
       setActiveView("overview");
     } else {
-      setActiveView("complete");
+      setIsEndingSession(true);
+      setSessionEndError("");
+      endCurrentSession()
+        .then(() => setActiveView("complete"))
+        .catch((error) => {
+          setSessionEndError(error.message || "Could not end this session.");
+          setShowExitConfirmation(true);
+        })
+        .finally(() => setIsEndingSession(false));
     }
-  }, [currentSetNumber, exercises.length, selectedIndex, setCount]);
+  }, [currentSetNumber, endCurrentSession, exercises.length, selectedIndex, setCount]);
 
   useEffect(() => {
     if (activeView !== "rest" || restDeadlineRef.current == null) return undefined;
     const intervalId = window.setInterval(() => {
-      const remaining = Math.max(
-        0,
-        Math.ceil((restDeadlineRef.current - Date.now()) / 1000)
-      );
-      setRestRemaining((current) => current === remaining ? current : remaining);
+      const deadline = restDeadlineRef.current;
+      if (deadline == null) return;
+      const remaining = Math.max(0, (deadline - Date.now()) / 1000);
+      setRestRemaining((current) => Math.abs(current - remaining) < 0.02 ? current : remaining);
       if (remaining === 0) {
-        window.clearInterval(intervalId);
         if (loggedSet && !isEditingLoggedSet) advanceAfterRest();
       }
     }, 250);
@@ -431,7 +484,10 @@ export function SessionOverview({
             <button
               type="button"
               className="session-overview-exit"
-              onClick={() => setShowExitConfirmation(true)}
+              onClick={() => {
+                setSessionEndError("");
+                setShowExitConfirmation(true);
+              }}
             >
               Leave session
             </button>
@@ -882,20 +938,28 @@ export function SessionOverview({
             <p id="session-overview-confirm-copy">
               Your current workout screen will close.
             </p>
+            {sessionEndError && (
+              <p className="session-overview-log-error" role="alert">{sessionEndError}</p>
+            )}
             <div className="session-overview-confirm-actions">
               <button
                 type="button"
                 className="session-overview-stay-button"
-                onClick={() => setShowExitConfirmation(false)}
+                disabled={isEndingSession}
+                onClick={() => {
+                  setShowExitConfirmation(false);
+                  setSessionEndError("");
+                }}
               >
                 Stay in session
               </button>
               <button
                 type="button"
                 className="session-overview-leave-button"
+                disabled={isEndingSession}
                 onClick={confirmLeaveSession}
               >
-                Leave session
+                {isEndingSession ? "Ending session…" : "Leave session"}
               </button>
             </div>
           </section>

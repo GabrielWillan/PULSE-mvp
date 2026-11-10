@@ -1,4 +1,4 @@
-from api.custom_validators import SessionsLogValidator
+from api.custom_validators import SessionEndValidator, SessionsLogValidator
 from fastapi import APIRouter, HTTPException, status
 from services.session_service import (
     create_sesssions,
@@ -53,9 +53,9 @@ def shown_sessions(routine_id:int):
 
 
 @router.patch("/endsession", status_code= status.HTTP_200_OK)
-def ended_session():
+def ended_session(session: SessionEndValidator):
     try:
-       return end_sessions() 
+       return end_sessions(session.sessions_id  ) 
     except KeyError:
         raise KeyError("This session dosen't exist") 
         

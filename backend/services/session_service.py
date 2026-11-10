@@ -65,6 +65,35 @@ def log_sessions(sessions_id:int, exercise_id:int, sets:int, reps: int, weight:i
         log_id = cursor.lastrowid
         db.commit()
         return {"log_id":log_id}
+
+
+def update_log_session(log_id: int, sessions_id: int, exercise_id: int, sets: int, reps: int, weight: float, rest_time: int):
+    with sq.connect("database/main/pulse.db") as db:
+        session = db.execute(
+            "SELECT id FROM sessions WHERE id = ?",
+            (sessions_id,),
+        ).fetchone()
+        if session is None:
+            raise KeyError("Session is not available")
+
+        existing_log = db.execute(
+            "SELECT sessions_id, exercise_id FROM logsessions WHERE id = ?",
+            (log_id,),
+        ).fetchone()
+        if existing_log is None:
+            raise KeyError("Set log is not available")
+        if existing_log[0] != sessions_id or existing_log[1] != exercise_id:
+            raise KeyError("Set log does not belong to this session and exercise")
+
+        db.execute(
+            """
+            UPDATE logsessions
+            SET sets = ?, reps = ?, weight = ?, rest_time = ?
+            WHERE id = ?
+            """,
+            (sets, reps, weight, rest_time, log_id),
+        )
+        return {"log_id": log_id}
     
 
 
@@ -150,17 +179,25 @@ def resume_sessions(sessions_id:int):
 
 def end_sessions(sessions_id:int):
     with sq.connect("database/main/pulse.db") as db:
-        end_at = db.execute(
-            """
-            SELECT ended_at
-            FROM sessions
-            WHERE id = ?
-            """,
-            (sessions_id, )
+        session = db.execute(
+            "SELECT ended_at FROM sessions WHERE id = ?",
+            (sessions_id,),
         ).fetchone()
+        if session is None:
+            raise KeyError(f"Session id {sessions_id} was not found")
 
+        ended_at = session[0]
+        if ended_at is None:
+            db.execute(
+                "UPDATE sessions SET ended_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (sessions_id,),
+            )
+            ended_at = db.execute(
+                "SELECT ended_at FROM sessions WHERE id = ?",
+                (sessions_id,),
+            ).fetchone()[0]
 
-        return {"Ended_at": end_at}
+        return {"session_id": sessions_id, "ended_at": ended_at}
 
 def fetch_days(routine_id: int):
     with sq.connect("database/main/pulse.db") as db:

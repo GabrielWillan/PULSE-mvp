@@ -27,7 +27,15 @@ export function RoutineFormModal({
     <PulseModal visible={visible} onClose={onClose}>
       <ModalScroll>
         <View style={styles.header}><View style={styles.copy}><Eyebrow>Routine</Eyebrow><Text style={styles.title}>{mode === 'create' ? 'Create routine' : 'Rename routine'}</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} style={styles.close}><Glyph name="close" size={22} color={PulseColors.mutedLight} /></Pressable></View>
-        <TextField label="ROUTINE NAME" value={name} onChangeText={setName} placeholder="e.g. Strength block" autoFocus />
+        <TextField
+          label="ROUTINE NAME"
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Strength block"
+          autoFocus
+          returnKeyType="go"
+          onSubmitEditing={() => { if (name.trim() && !loading) onSave(name.trim()); }}
+        />
         {error ? <Notice tone="error">{error}</Notice> : null}
         <View style={styles.actions}><ActionButton title="Cancel" variant="secondary" onPress={onClose} style={styles.action} /><ActionButton title={mode === 'create' ? 'Create routine' : 'Save name'} onPress={() => onSave(name.trim())} loading={loading} disabled={!name.trim()} style={styles.action} /></View>
       </ModalScroll>

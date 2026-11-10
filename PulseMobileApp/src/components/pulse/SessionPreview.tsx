@@ -38,8 +38,8 @@ export function SessionPreview({
   const estimatedMinutes = Math.max(1, Math.round(exercises.reduce((sum, item) => sum + Number(item.sets || 0) * 100 + Math.max(Number(item.sets || 0) - 1, 0) * Number(item.rest_time || 0) + 120, 0) / 60));
 
   return (
-    <PulseModal visible={visible} onClose={onClose} onDismiss={onDismiss}>
-      <ModalScroll>
+    <PulseModal visible={visible} onClose={onClose} onDismiss={onDismiss} dialogMinHeight={540}>
+      <ModalScroll fill>
         <View style={styles.header}>
           <View style={styles.headerCopy}>
             <Eyebrow>Session review · {day.day_name}</Eyebrow>

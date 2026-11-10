@@ -1,8 +1,21 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 const configuredBaseUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
-const defaultBaseUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
-export const API_BASE_URL = (configuredBaseUrl || defaultBaseUrl).replace(/\/$/, '');
+const expoHostUri = Constants.expoConfig?.hostUri
+  ?? Constants.manifest2?.extra?.expoClient?.hostUri
+  ?? Constants.manifest?.debuggerHost;
+const expoHostAddress = expoHostUri?.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').split('/')[0];
+const expoHost = expoHostAddress?.startsWith('[')
+  ? expoHostAddress.slice(1, expoHostAddress.indexOf(']'))
+  : expoHostAddress?.split(':')[0];
+const expoHostBaseUrl = expoHost ? `http://${expoHost}:8000` : undefined;
+const localBaseUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+const apiBaseUrls = [...new Set([configuredBaseUrl, expoHostBaseUrl, localBaseUrl]
+  .filter((url): url is string => Boolean(url))
+  .map((url) => url.replace(/\/$/, '')))];
+let activeBaseUrl = apiBaseUrls[0];
+export const API_BASE_URL = activeBaseUrl;
 
 export type Routine = {
   id: number;
@@ -59,8 +72,36 @@ function errorMessage(payload: any, fallback: string) {
   return fallback;
 }
 
+function connectionError(path: string, cause: unknown) {
+  const attempted = apiBaseUrls.join(' or ');
+  const detail = cause instanceof Error ? ` (${cause.message})` : '';
+  return new Error(`Could not reach the PULSE API at ${attempted}${path}. Make sure FastAPI is running on port 8000 and your iPhone and computer are on the same Wi-Fi network. Expo Go on a phone cannot use localhost.${detail}`);
+}
+
 async function request<T>(path: string, init?: RequestInit, fallback = 'The request failed'): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, init);
+  const isRead = !init?.method || init.method.toUpperCase() === 'GET';
+  const candidates = isRead
+    ? [...new Set([activeBaseUrl, ...apiBaseUrls].filter((url): url is string => Boolean(url)))]
+    : [activeBaseUrl];
+  let response: Response | undefined;
+  let lastNetworkError: unknown;
+
+  for (const baseUrl of candidates) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      response = await fetch(`${baseUrl}${path}`, { ...init, signal: init?.signal ?? controller.signal });
+      activeBaseUrl = baseUrl;
+      clearTimeout(timeout);
+      break;
+    } catch (error) {
+      clearTimeout(timeout);
+      lastNetworkError = error;
+    }
+  }
+
+  if (!response) throw connectionError(path, lastNetworkError);
+
   const raw = await response.text();
   let payload: any = null;
   if (raw) {
@@ -72,7 +113,7 @@ async function request<T>(path: string, init?: RequestInit, fallback = 'The requ
   }
 
   if (!response.ok) {
-    throw new Error(errorMessage(payload, fallback));
+    throw new Error(errorMessage(payload, `${fallback} (HTTP ${response.status})`));
   }
   return payload as T;
 }
@@ -177,8 +218,8 @@ export function createSession(day_id: number) {
   }, 'Could not start this session');
 }
 
-export function getSessionLogs() {
-  return request<{ logged_sessions: SessionLog[] }>('/showsessions', undefined, 'Could not load session logs');
+export function getSessionLogs(routine_id: number) {
+  return request<{ logged_sessions: SessionLog[] }>(`/showsessions?routine_id=${encodeURIComponent(routine_id)}`, undefined, 'Could not load session logs');
 }
 
 export function logSession(payload: Omit<SessionLog, 'id'>) {
@@ -194,11 +235,16 @@ export function updateSessionLog(log_id: number, payload: Omit<SessionLog, 'id'>
     method: 'PATCH',
     headers: jsonHeaders,
     body: JSON.stringify(payload),
-  }, 'Could not edit this set');
+  }, 'Could not edit this set').catch((error: unknown) => {
+    if (error instanceof Error && /not found|method not allowed/i.test(error.message)) throw new Error(`Could not find saved set ${log_id}. Refresh the session and try again.`);
+    throw error;
+  });
 }
 
 export function endSession(sessions_id: number) {
-  return request(`/endsession?sessions_id=${encodeURIComponent(sessions_id)}`, {
+  return request<{ session_id: number; ended_at: string }>(`/endsession`, {
     method: 'PATCH',
+    headers: jsonHeaders,
+    body: JSON.stringify({ sessions_id }),
   }, 'Could not end this session');
 }

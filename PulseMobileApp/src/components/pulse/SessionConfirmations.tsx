@@ -40,11 +40,13 @@ export function SkipWarningModal({
 export function EndSessionModal({
   visible,
   loading,
+  error,
   onClose,
   onConfirm,
 }: {
   visible: boolean;
   loading: boolean;
+  error?: string;
   onClose: () => void;
   onConfirm: () => void;
 }) {
@@ -54,6 +56,7 @@ export function EndSessionModal({
         <Eyebrow>Workout in progress</Eyebrow>
         <Text style={styles.title}>End this session?</Text>
         <Text style={styles.body}>Your saved sets will stay in your session history.</Text>
+        {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         <View style={styles.actions}><ActionButton title="Keep training" variant="secondary" onPress={onClose} style={styles.action} /><ActionButton title="End session" variant="danger" onPress={onConfirm} loading={loading} style={styles.action} /></View>
       </View>
     </PulseModal>
@@ -64,6 +67,7 @@ const styles = StyleSheet.create({
   content: { gap: 12, padding: 22 },
   title: { color: '#fff', fontSize: 23, fontWeight: '800', letterSpacing: -0.5 },
   body: { color: PulseColors.mutedLight, fontSize: 13, lineHeight: 19 },
+  error: { color: PulseColors.danger, fontSize: 11, lineHeight: 16 },
   checkboxRow: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 9 },
   checkbox: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#55739D', borderRadius: 6 },
   checkboxChecked: { backgroundColor: PulseColors.accent, borderColor: PulseColors.accent },

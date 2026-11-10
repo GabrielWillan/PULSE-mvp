@@ -279,7 +279,6 @@ export async function createSession(day_id) {
   return Data;
 }
 
-
 export async function logSession(
   sessions_id,
   exercise_id,
@@ -339,6 +338,25 @@ export async function updateSessionLog(
       ? Data.detail.map((issue) => issue.msg).join("; ")
       : Data?.detail;
     throw new Error(detail || "Could not update this set log");
+  }
+  return Data;
+}
+
+export async function endSession(sessions_id) {
+  const Response = await fetch("http://localhost:8000/endsession", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sessions_id }),
+  });
+
+  const Data = await Response.json().catch(() => null);
+  if (!Response.ok) {
+    const detail = Array.isArray(Data?.detail)
+      ? Data.detail.map((issue) => issue?.msg ?? String(issue)).join("; ")
+      : Data?.detail;
+    throw new Error(detail || "Could not end this session");
   }
   return Data;
 }

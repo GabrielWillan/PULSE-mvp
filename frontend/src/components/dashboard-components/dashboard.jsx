@@ -1156,7 +1156,10 @@ export function DashBoard() {
                     type="button"
                     role="menuitem"
                     className="dashboard-menu-item"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      navigate("/training-log", { state: { routine: selectedRoutine } });
+                    }}
                   >
                     Training log
                   </button>
